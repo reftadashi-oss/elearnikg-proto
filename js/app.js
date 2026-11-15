@@ -681,12 +681,20 @@ function padToggle() { try { localStorage.setItem('root-pad', padOn() ? '0' : '1
 const padKeys = (rows, cls) => `<div class="pad ${cls}">${rows.map(r => `<div>${r.map(c => `<button tabindex="-1" data-k="${c}"${c.length > 1 || c === ' ' ? ' class="wide"' : ''}>${{ '-': '−', ' ': 'あける', BS: 'けす', EN: 'つぎ' }[c] || c}</button>`).join('')}</div>`).join('')}</div>`;
 const numPad = () => padKeys([[...'789'], [...'456'], [...'123'], [...'0.-'], ['BS', 'EN']], 'npad');
 const abcPad = () => padKeys([[...'qwertyuiop'], [...'asdfghjkl'], [...'zxcvbnm'], [' ', '-', '.', 'BS']], 'abc');
-const useKanaButtons = () => me.grade <= 2 || padOn(); // 3年生の3月まではボタン（試作品は学年で分ける：仮）。画面の ボタンが on の ときは どの 学年も ボタン
+// ひらがなの 問題を スマホ・タブレットの キーボード（フリック・テンキー）で 入れる（2026年11月15日）。
+// 指で さわる 画面だけ。3年生から はじめは この 形（1〜2年は 画面の あいうえお ボタン：仮）。「⌨」で 切りかえ（その ブラウザで おぼえる）
+const isTouch = () => matchMedia('(pointer: coarse)').matches;
+const kanaNative = () => { if (!isTouch()) return false; try { const v = localStorage.getItem('root-kana'); if (v) return v === 'native'; } catch (e) { /* 下へ */ } return me.grade >= 3; };
+function kanaToggle() { try { localStorage.setItem('root-kana', kanaNative() ? 'pad' : 'native'); } catch (e) { /* そのまま */ } if (cur && cur.redraw) cur.redraw(); }
+const useKanaButtons = () => !kanaNative() && (me.grade <= 2 || padOn()); // 3年生の3月まではボタン（試作品は学年で分ける：仮）。画面の ボタンが on の ときは どの 学年も ボタン
+const toHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
 function questionHTML(q) {
   // 箱は readonly：日本語入力（IME）がオンでも変換されないよう、押したキーをプログラムで読む
   // 箱の名前：「市」「時」「分」などは 箱の 右（あおもり 市・3 時 20 分）。「あまり」「分子」などは 箱の 左
+  // スマホの キーボードで 入れる ときだけ、箱を ふつうの 入力に する（readonly に しない）
+  const native = q.kana && kanaNative();
   const boxes = q.boxes.map((lab, k) => { const l = lab ? `<span class="lab">${R(lab)}</span>` : '', after = lab && LAB_AFTER.has(lab.replace(/\{([^|}]+)\|[^}]*\}/g, '$1'));
-    return `<span class="ab">${after ? '' : l}<input class="ans ${q.kana || q.latin || q.keys || q.arrows ? 'kana' : 'num'}" data-k="${k}" autocomplete="off" readonly>${after ? l : ''}</span>`; }).join('');
+    return `<span class="ab">${after ? '' : l}<input class="ans ${q.kana || q.latin || q.keys || q.arrows ? 'kana' : 'num'}" data-k="${k}" autocomplete="off" ${native ? `lang="ja" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="${k < q.boxes.length - 1 ? 'next' : 'done'}"` : 'readonly'}>${after ? l : ''}</span>`; }).join('');
   // 音を聞く問題：出したときに1回鳴らし、「きく」ボタンで何回でも（content_more.js の Snd）
   if (q.tap && window.Snd) Snd.tapQ = q.tap;   // リズムを打つ問題
   if (q.sound && window.Snd) { Snd.cur = q.sound; Snd.metro = !!q.metro; setTimeout(() => Snd.play(q.sound, undefined, q.metro), 300); }
@@ -694,12 +702,14 @@ function questionHTML(q) {
   // リズムを打つ問題は、答えの箱とボタンを かくす（打ったあと、プログラムが入れて答える）
   if (q.tap) return `<div class="q">${R(q.text)} <span style="display:none">${boxes}</span></div><button class="primary" id="ok" style="display:none"></button>`;
   return `${play}<div class="q">${R(q.text)} ${boxes}</div>
-    ${q.kana && !useKanaButtons() ? `<p class="note">${R('ローマ{字|じ}で {打|う}つと ひらがなに なるよ')}</p>` : ''}
+    ${native ? `<p class="note">${R('{箱|はこ}を さわって、ひらがなで {入|い}れてね（{漢字|かんじ}に しない）')}</p>` : ''}
+    ${q.kana && !native && !useKanaButtons() ? `<p class="note">${R('ローマ{字|じ}で {打|う}つと ひらがなに なるよ')}</p>` : ''}
     ${q.kana && useKanaButtons() ? kanaPad() : ''}
     ${padOn() && !q.kana ? (q.keys ? `<p class="note">${R('この {問題|もんだい}は キーボードで {打|う}つ {練習|れんしゅう}だよ（{画面|がめん}の ボタンは ないよ）')}</p>` : q.arrows ? '' : q.latin ? abcPad() : numPad()) : ''}
     <button class="primary" id="ok">${R('こたえる')}${padOn() ? '' : '（Enter）'}</button>
     <p class="msg" id="qmsg"></p>
-    <p><button class="mini padtg" tabindex="-1" onclick="padToggle()">⌨ ${R(padOn() ? '{画面|がめん}の ボタンを かくす' : '{画面|がめん}の ボタンで {入|い}れる')}</button></p>`;
+    <p>${q.kana && isTouch() ? `<button class="mini padtg" tabindex="-1" onclick="kanaToggle()">⌨ ${R(native ? '{画面|がめん}の あいうえお ボタンで {入|い}れる' : 'スマホの キーボードで {入|い}れる')}</button>`
+      : `<button class="mini padtg" tabindex="-1" onclick="padToggle()">⌨ ${R(padOn() ? '{画面|がめん}の ボタンを かくす' : '{画面|がめん}の ボタンで {入|い}れる')}</button>`}</p>`;
 }
 function kanaPad() {
   return `<div class="pad">${Kana.ROWS.map(r => `<div>${[...r].map(c => c === ' ' ? '<span></span>' : `<button tabindex="-1" data-c="${c}">${c}</button>`).join('')}</div>`).join('')}
@@ -713,6 +723,7 @@ function isRight(q, ans) {
     if (q.judge) return q.judge(s);     // プログラミング（ロボット）：命令を動かして確かめる（道は何とおりでもよい）
     if (q.latin) { const n = s.toLowerCase().replace(/\s+/g, ' '); return (q.roma && Kana.finish(n) === q.roma) || [a, ...(q.alts || [])].some(x => String(x).toLowerCase() === n); }
     if (!q.kana && s !== '' && !isNaN(Number(s)) && !isNaN(Number(a))) return Number(s) === Number(a);
+    if (q.kana) return toHira(String(a)) === toHira(s).replace(/\s+/g, ''); // スマホで カタカナに なっても 同じに あつかう
     return String(a) === s;
   });
 }
@@ -720,19 +731,22 @@ function isRight(q, ans) {
 // 入れ方：Enterで次の箱へ、最後の箱でEnterを押すと答える
 function bindInput(q, done) {
   const ins = [...document.querySelectorAll('.ans')];
-  const romaji = q.kana && !useKanaButtons();
+  const native = q.kana && kanaNative();
+  const romaji = q.kana && !native && !useKanaButtons();
   let active = 0;
   const focus = k => { active = k; ins.forEach((el, j) => el.classList.toggle('active', j === k)); ins[k].focus(); };
   ins.forEach((el, k) => { el.dataset.raw = ''; el.onfocus = () => focus(k); });
   focus(0);
   const show = el => { if (romaji) { const r = Kana.toHira(el.dataset.raw); el.value = r.kana + r.rest; } else el.value = el.dataset.raw; };
-  const read = () => ins.map(el => q.kana ? (romaji ? Kana.finish(el.dataset.raw) : el.value) : el.dataset.raw);
+  const read = () => ins.map(el => q.kana ? (romaji ? Kana.finish(el.dataset.raw) : el.value.trim()) : el.dataset.raw);
   const submit = () => { const a = read(); if (a.some(x => x === '')) { focus(a.findIndex(x => x === '')); const m = $('#qmsg'); if (m) m.innerHTML = R('こたえを {入|い}れてね'); return; } done(a); };
 
   // e.code（キーの場所）で読むので、IMEがオン・オフどちらでも同じに動く
   document.onkeydown = e => {
     if (!document.body.contains(ins[0])) { document.onkeydown = null; return; }
     const el = ins[active], c = e.code;
+    // スマホの キーボード：文字は そのまま 入れさせ、変換中で ない Enter（つぎ・完了）だけ 読む
+    if (native) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); if (active < ins.length - 1) focus(active + 1); else submit(); } return; }
     if (c === 'Enter' || c === 'NumpadEnter') { e.preventDefault(); if (active < ins.length - 1) focus(active + 1); else submit(); return; }
     if (c === 'Backspace') { e.preventDefault(); if (q.kana && !romaji) el.value = el.value.slice(0, -1); else { el.dataset.raw = el.dataset.raw.slice(0, -1); show(el); } return; }
     // キーボードの単元：e.key（出た文字）で読む。Ctrl＋文字は「Ctrl+C」として入れる
