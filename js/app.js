@@ -14,7 +14,11 @@ const idleMs = () => me && me.role === 'child' && document.querySelector('main.m
 function touch() { clearTimeout(idleTimer); if (me && me.role !== 'teacher') idleTimer = setTimeout(() => { if (typeof glossClose === 'function') glossClose(); logout(); alert('しばらく つかわなかったので、ログアウトしました'); }, idleMs()); }
 ['click', 'keydown', 'wheel', 'touchstart'].forEach(e => document.addEventListener(e, touch, { passive: true }));
 
-function logout() { me = null; sessionStorage.removeItem('me'); bodyClass(); showLogin(); }
+function logout() { me = null; testBack = null; sessionStorage.removeItem('me'); bodyClass(); showLogin(); }
+// テスト用の アカウント（me.test）：子どもの 画面と 先生の 画面を、ログインし直さずに 行き来できる（2026年11月15日 社長。試作品だけ）
+let testBack = null;
+function testToTeacher() { testBack = me.id; me = Store.get().users.find(u => u.role === 'teacher'); route(); }
+function testReturn() { me = Store.get().users.find(u => u.id === testBack) || null; testBack = null; route(); }
 const holiday = () => Store.get().settings.holiday;
 
 // ================= ログイン（全部の漢字にふりがな） =================
@@ -83,7 +87,7 @@ let parentKid = null;
 function header(extra = '', ruto = false) {
   return `<header><span>${esc(me.name)}（${Furigana.gradeLabel(me.grade, me.grade)}）</span>
     ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}${extra}
-    <button onclick="logout()">ログアウト</button></header>`;
+    ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
 }
 function todayDots() {
   const n = Rules.rutoCountOn(Store.attemptsOf(me.id), Store.today()), cap = Rules.capFor(holiday());
@@ -168,6 +172,7 @@ function yomiPre(u, hist, grade = me.grade) {
   return kk.series.slice(0, i).every(s => realUnits(s).filter(isYomi).every(x => cleared(hist, x)));
 }
 function gradeOK(u, hist, grade = me.grade) {
+  if (me && me.test) return true;   /* テスト用の アカウント：ぜんぶ ひらく */
   const g = unitGrade(u), se = seriesById(UNITS[u].series), subj = subjectOf(se);
   if (subj.id !== 'kanken') return effGrade(subj, hist, grade) >= EG(g);
   if (yomiPre(u, hist, grade)) return true;
@@ -275,6 +280,7 @@ function seriesOpen(se, hist, grade = me.grade) {
 // 単元の じょうたい：'done'（合格した）・'now'（いま やる）・'lock'（まだ）
 function unitStep(u, hist) {
   const U = UNITS[u], se = SUBJECTS.flatMap(s => s.series).find(x => x.id === U.series);
+  if (me && me.test) return se && !U.extra && U.kind !== 'fin' && cleared(hist, u) ? 'done' : 'now';   /* テスト用：順番も 学年も 関係なく ぜんぶ できる */
   if (U.kind === 'fin') { const s = finStep(U.grade, hist); return s === 'now' || s === 'done' ? s : 'lock'; }
   if (!se) return 'now';
   if (!seriesOpen(se, hist)) return 'lock';
@@ -1064,7 +1070,7 @@ function showTeacher(tab) {
     body = acctHTML(kids) + `
       <button onclick="if(confirm('架空のデータを作りなおします'))Store.reset().then(logout)">架空のデータを作りなおす</button>`;
   }
-  app().innerHTML = `<header><span>先生の画面（${esc(me.name)}）</span><button onclick="logout()">ログアウト</button></header>
+  app().innerHTML = `<header><span>先生の画面（${esc(me.name)}）</span><span>${testBack ? '<button onclick="testReturn()">テスト用の 子どもの 画面へ</button>' : ''}<button onclick="logout()">ログアウト</button></span></header>
     <nav>${tabs.map(([k, n]) => `<button class="${k === tTab ? 'on' : ''}" onclick="showTeacher('${k}')">${n}</button>`).join('')}</nav><main class="wide">${body}</main>`;
   if (tTab === 'ml') { mlTeacherBind(); bindCharts(); }
   if ($('#hol')) $('#hol').onchange = e => { Store.get().settings.holiday = e.target.checked; Store.save(); };

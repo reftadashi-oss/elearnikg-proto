@@ -97,6 +97,7 @@ const Store = (() => {
     const yui = seedUnits(CHILDREN[2]).slice(-1)[0];
     simulate(CHILDREN[2], yui, T, 15, { skill: 0.4 });                 // ゆい：続けて届かない
     simulate(CHILDREN[2], yui, T, 16, { skill: 0.4 });
+    await addTester();
     S.seedStart = true;   // 2年生から上は、その学年の スタートから（app.js の seedStartApply が 1回だけ 入れる）
     S.attendance.c4 = S.attendance.c4.filter(d => d !== today());         // れんは今日はまだ来ていない
     if (typeof MoneyLab !== 'undefined') MoneyLab.state();                              // マネーラボ（はるとの6年分）も作る
@@ -198,13 +199,26 @@ const Store = (() => {
   // ほかのタブで保存されたら、このタブのデータも読みなおす（古いデータで上書きしないため）
   window.addEventListener('storage', e => { if (e.key === KEY) sync(); });
 
-  async function init() { S = load(); if (!S) await seed(); purge(); }
+  // テスト用の アカウント（2026年11月15日 社長）：ぜんぶの 単元が はじめから ひらく（app.js の me.test）。先生の 一覧・マネーラボには 出さない。
+  // 試作品だけの もの。本番には 作らない。名前は 本物の 人の 名前に しない（公開の リポジトリに 入るため）
+  const TESTERS = [{ id: 'x1', username: 'admin', name: 'テスト①（全単元）' }, { id: 'x2', username: 'admin1234', name: 'テスト②（全単元）' }];
+  async function addTester() {
+    let added = false;
+    for (const t of TESTERS) {
+      const old = S.users.find(u => u.username === t.username);
+      if (old) { if (old.test && (!S.attendance[old.id] || old.name !== t.name)) { S.attendance[old.id] = S.attendance[old.id] || []; old.name = t.name; added = true; } continue; }
+      S.users.push({ id: t.id, username: t.username, role: 'child', test: true, name: t.name, grade: 6, salt: t.id, pw: await hash('admin', t.id), fails: 0, locked: false });
+      S.attendance[t.id] = S.attendance[t.id] || []; added = true;
+    }
+    return added;
+  }
+  async function init() { S = load(); if (!S) await seed(); else if (await addTester()) save(); purge(); }
   // 架空のデータを 作りなおす。先生が 変えた ロードマップ（plan・startDef・planLog）は のこす（2026年11月15日）
   async function reset() { const keep = S ? { plan: S.plan, startDef: S.startDef, planLog: S.planLog } : {}; localStorage.removeItem(KEY); await seed(); Object.entries(keep).forEach(([k, v]) => { if (v) S[k] = v; }); save(); }
 
   return { init, reset, save, get: () => S, today, dayOf, attemptsOf, balance, addAttempt, login, resetPassword,
     openAccount, closeAccount, reopen, stopped, purgeDay, purge, openTeacher, kidsOf, setGrade, rename, promoteAll, changePassword,
     parents: () => S.users.filter(u => u.role === 'parent' && !stopped(u)), teachers: () => S.users.filter(u => u.role === 'teacher'),
-    children: () => S.users.filter(u => u.role === 'child' && !stopped(u)),
+    children: () => S.users.filter(u => u.role === 'child' && !u.test && !stopped(u)),
     hidden: () => S.users.filter(u => u.role === 'child' && stopped(u)) };
 })();
