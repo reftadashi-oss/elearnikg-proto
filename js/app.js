@@ -583,12 +583,12 @@ function exampleHTML(u, qs) {
     <div class="q ex lbox" style="pointer-events:none;margin:10px 0;font-size:1.05em;text-align:center">${q.text}</div>
     <p class="hint" style="font-size:1.15em;text-align:center;margin:4px 0">「スタート」を おして、{音符|おんぷ}の リズムに {合|あ}わせて「タン」を おそう。</p>`;
   let a = ansText(u.id, q.answer.map(String), q.boxes);
-  if (/[一-鿿]/.test(a)) a = `[[${a}]]`;                    // 県の名前など（ふりがなの しくみで 線つきに なる）
+  if (/[一-鿿]/.test(a) && q.boxes[0] !== 'マス') a = `[[${a}]]`;                   // 県の名前など（ふりがなの しくみで 線つきに なる）
   const snd = q.sound ? `<p class="note">（{音|おと}が {出|で}る {問題|もんだい}だよ。{問題|もんだい}の ときに「きく」ボタンで {聞|き}けるよ）</p>` : '';
   return `<span class="lh ex">{例題|れいだい}</span>この {単元|たんげん}の {問題|もんだい}は、こんな {形|かたち}だよ。
     <div class="q ex lbox" style="pointer-events:none;margin:10px 0;font-size:1.05em;text-align:center">${q.text}</div>${snd}
     ${typeof Steps === 'object' ? Steps.html(u.id, q) : ''}
-    <p class="hint" style="font-size:1.15em;text-align:center;margin:4px 0">こたえ：<b class="big">${a}</b></p>`;
+    <p class="hint" style="font-size:1.15em;text-align:center;margin:4px 0">こたえ：<b${a.length > 14 ? '' : ' class="big"'}>${a}</b></p>`;
 }
 // 問題の見分け方：key（えらぶ問題は、答えの順番が変わっても同じ key）。古い記録は key がないので文で
 const qKey = q => q.key || q.text;
@@ -807,7 +807,7 @@ function grade() {
   app().innerHTML = unitHeader() + `<main>
     <h2>${R('こたえあわせ')}：${r.score} / ${r.total}</h2>
     <table class="check"><tr><th></th><th>${R('{問題|もんだい}')}</th><th>${R('きみの {答|こた}え')}</th><th></th>${showAns ? `<th>${R('{正|ただ}しい {答|こた}え')}</th>` : ''}</tr>
-    ${cur.answers.map((a, k) => `<tr><td>${k + 1}</td><td>${R(a.text)}</td><td>${fmt(a.first, a)}</td><td class="${a.ok ? 'ok' : 'ng'}">${a.ok ? '○' : '×'}</td>${showAns ? `<td class="hint"><b>${a.ok ? '' : fmt(a.correct.map(String), a)}</b></td>` : ''}</tr>`).join('')}</table>
+    ${cur.answers.map((a, k) => `<tr><td>${k + 1}</td><td>${R(noBtn(a.text))}</td><td>${fmt(a.first, a)}</td><td class="${a.ok ? 'ok' : 'ng'}">${a.ok ? '○' : '×'}</td>${showAns ? `<td class="hint"><b>${a.ok ? '' : fmt(a.correct.map(String), a)}</b></td>` : ''}</tr>`).join('')}</table>
     <div class="center">${cur.unit.kind === 'fin' ? (r.passed ? '' : `<p>${R('まちがえた {問題|もんだい}を なおそう')}</p>`) : ''}${needFix ? `<button class="primary big" onclick="startFix()">${R('まちがえた{問題|もんだい}を なおす')}</button>`
       : `<button class="primary big" onclick="showResult()">${R('つぎへ')}</button>`}</div></main>`;
 }
@@ -998,7 +998,7 @@ function attemptDetail(a, label) {
   const t = new Date(a.at), fast = q => q.ms < Rules.CONFIG.fastMs;
   return `<div class="att"><p><b>${label ? label + '：' : ''}${t.getMonth() + 1}/${t.getDate()} ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}</b>　${a.score}/${a.total}点　${a.invalid ? `無効（${esc(a.invalid)}）` : a.passed ? '合格' : '合格ラインに届かない'}</p>
     <table class="check"><tr><th></th><th>問題</th><th>最初の答え</th><th>正しい答え</th><th></th><th>時間</th><th>直し</th></tr>
-    ${a.questions.map((q, k) => `<tr class="${fast(q) && !q.ok ? 'fastng' : ''}"><td>${k + 1}</td><td>${Furigana.render(q.text, 'none')}</td><td>${ansText(a.unit, q.first, q.boxes)}</td><td>${ansText(a.unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${(q.ms / 1000).toFixed(1)}秒</td><td>${q.ok ? '' : q.fixed ? '直した' : '直していない'}</td></tr>`).join('')}</table></div>`;
+    ${a.questions.map((q, k) => `<tr class="${fast(q) && !q.ok ? 'fastng' : ''}"><td>${k + 1}</td><td>${Furigana.render(noBtn(q.text), 'none')}</td><td>${ansText(a.unit, q.first, q.boxes)}</td><td>${ansText(a.unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${(q.ms / 1000).toFixed(1)}秒</td><td>${q.ok ? '' : q.fixed ? '直した' : '直していない'}</td></tr>`).join('')}</table></div>`;
 }
 // 苦手の中身：その単元の最近20問（新しい順）。苦手の計算（rules.js の weakUnits）と同じ問題を出す。まちがえた問題は色をつける
 function weakDetail(childId, unit) {
@@ -1007,7 +1007,7 @@ function weakDetail(childId, unit) {
   const ng = qs.filter(q => !q.ok);
   return `<p class="att">まちがえた問題：${ng.length}問 / ${qs.length}問</p>
     <table class="check"><tr><th>日</th><th>問題</th><th>最初の答え</th><th>正しい答え</th><th></th><th>時間</th></tr>
-    ${qs.map(q => { const d = new Date(q.at); return `<tr class="${q.ok ? '' : 'ng'}"><td>${d.getMonth() + 1}/${d.getDate()}</td><td>${Furigana.render(q.text, 'none')}</td><td>${ansText(unit, q.first, q.boxes)}</td><td>${ansText(unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${(q.ms / 1000).toFixed(1)}秒</td></tr>`; }).join('')}</table>`;
+    ${qs.map(q => { const d = new Date(q.at); return `<tr class="${q.ok ? '' : 'ng'}"><td>${d.getMonth() + 1}/${d.getDate()}</td><td>${Furigana.render(noBtn(q.text), 'none')}</td><td>${ansText(unit, q.first, q.boxes)}</td><td>${ansText(unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${(q.ms / 1000).toFixed(1)}秒</td></tr>`; }).join('')}</table>`;
 }
 // みんながまちがえる問題（仕様書9章の5番の目的：問題文がおかしくないかのチェック）。同じ問題文を、全員分の最初の答えで数える。
 // 数字を変えて作る算数は同じ問題がくり返し出にくいので、漢字などの決まった問題で役に立つ
@@ -1023,17 +1023,24 @@ function hardQuestions(kids) {
   return `<details class="detail hard"><summary>みんながまちがえる問題（${list.length}問）</summary>
     <p class="note">問題文や答えがおかしくないかのチェック用。${HARD.minTries}回以上出て、正答率${HARD.maxRate * 100}%未満の問題。</p>
     <table class="list"><tr><th>問題</th><th>正しい答え</th><th>正答率</th><th>多い まちがい</th></tr>
-    ${list.map(x => { const top = Object.entries(x.wrong).sort((a, b) => b[1] - a[1])[0]; return `<tr><td>${Furigana.render(x.text, 'none')}<br><small class="note">${R(UNITS[x.unit].name)}</small></td><td>${ansText(x.unit, x.correct, x.boxes)}</td><td>${Math.round(x.ok / x.n * 100)}%</td><td>${top ? `${ansText(x.unit, top[0].split(' '), x.boxes)}（${top[1]}回）` : ''}</td></tr>`; }).join('') || '<tr><td colspan="4">ありません</td></tr>'}</table></details>`;
+    ${list.map(x => { const top = Object.entries(x.wrong).sort((a, b) => b[1] - a[1])[0]; return `<tr><td>${Furigana.render(noBtn(x.text), 'none')}<br><small class="note">${R(UNITS[x.unit].name)}</small></td><td>${ansText(x.unit, x.correct, x.boxes)}</td><td>${Math.round(x.ok / x.n * 100)}%</td><td>${top ? `${ansText(x.unit, top[0].split(' '), x.boxes)}（${top[1]}回）` : ''}</td></tr>`; }).join('') || '<tr><td colspan="4">ありません</td></tr>'}</table></details>`;
 }
 // 答えの見せ方：あまりのあるわり算は「9 あまり 3」
 // 答えの見せ方：箱の名前（あまり・分子・分母など）に合わせる
+// 記録の 表では、問題の 中の ボタン（リズムの スタート・タン など）は 出さない
+const noBtn = t => String(t).replace(/<button[^>]*>[\s\S]*?<\/button>|<p class="tapmsg"><\/p>/g, '');
 function ansText(unit, arr, boxes) {
+  if (unit === 'x2l-5') return String(arr[0]) === '0' ? 'ずれた' : 'ぴったり';   // リズムを打つ：中の 番号は 見せない（2026年11月15日）
   const L = (boxes || []).map(b => (b || '').replace(/\{([^|}]+)\|[^}]*\}/g, '$1'));
   if ((L[1] === 'あまり' || (!boxes && unit === 'm6-3')) && arr.length === 2) return esc(`${arr[0]} あまり ${arr[1]}`);
   if (L[0] === '県' && window.PREF_NAME) return esc(arr.map(x => PREF_NAME(Number(x)) || 'こたえなし').join(''));   // 地図をクリックする問題（県のコード → 名前）
   if (L.join() === '分子,分母') return esc(`${arr[0]}/${arr[1]}`);
-  if (L[0] === 'マス' && String(arr[0]).length === 6) { const v = Number(arr[0]), s = [Math.floor(v / 10000), Math.floor(v / 100) % 100, v % 100].filter(Boolean); return esc(s.join(' → ')); }   // 5手詰の答え（1手目 → 3手目 → 5手目）
-  if (L[0] === 'マス' && String(arr[0]).length === 4) { const v = Number(arr[0]), a = Math.floor(v / 100), c = v % 100; return esc(c ? `${a} → ${c}` : `${a}`); }   // 3手詰の答え（1手目 → 3手目）
+  // 詰将棋の答え：マスの 番号（21＝上の 数字 2・右の 数字 1）を、盤の 数字で 読める 形に（2026年11月15日 社長：「21 → 23」は わかりにくい）
+  const SQ = n => `「上 ${Math.floor(n / 10)}・右 ${n % 10}」`;
+  const TE = (s, start) => s.map((n, i) => `${start + i * 2}手目は ${SQ(n)}`).join('、') + ' の マス';
+  if (L[0] === 'マス' && String(arr[0]).length === 6) { const v = Number(arr[0]), s = [Math.floor(v / 10000), Math.floor(v / 100) % 100, v % 100].filter(Boolean); return esc(TE(s, 1)); }   // 5手詰の答え（1手目 → 3手目 → 5手目）
+  if (L[0] === 'マス' && String(arr[0]).length === 4) { const v = Number(arr[0]), s = [Math.floor(v / 100), v % 100].filter(Boolean); return esc(TE(s, 1)); }   // 3手詰の答え（1手目 → 3手目）
+  if (L[0] === 'マス' && String(arr[0]).length === 2 && String(arr[0])[1] !== '0') return esc(`${SQ(Number(arr[0]))} の マス`);   // 1手詰
   if (L.join() === '整数,分子,分母') return esc(`${arr[0]}と${arr[1]}/${arr[2]}`);
   if (L[1] === '：') return esc(`${arr[0]}：${arr[1]}`);
   if (L.some(Boolean)) return esc(arr.map((x, i) => `${x}${L[i] || ''}`).join(' '));
@@ -1193,7 +1200,7 @@ function reportHTML(childId, month) {
     return list.sort((a, b) => a[1] - b[1]).slice(0, HOME.max).map(([u, , why, qs]) => {
       const seen = new Set(), ng = qs.filter(q => !q.ok).reverse().filter(q => !seen.has(q.text) && seen.add(q.text)).slice(0, HOME.qs);
       return `<li><b>${Furigana.render(u.name, 'none')}</b>（${u.col}）　<small class="note">${why}</small>
-        ${ng.length ? `<details class="detail"><summary>最近まちがえた問題（${ng.length}問）</summary><table class="check">${ng.map(q => `<tr><td>${Furigana.render(q.text, 'none')}</td><td>正しい答え：${ansText(u.id, q.correct, q.boxes)}</td></tr>`).join('')}</table></details>` : ''}</li>`;
+        ${ng.length ? `<details class="detail"><summary>最近まちがえた問題（${ng.length}問）</summary><table class="check">${ng.map(q => `<tr><td>${Furigana.render(noBtn(q.text), 'none')}</td><td>正しい答え：${ansText(u.id, q.correct, q.boxes)}</td></tr>`).join('')}</table></details>` : ''}</li>`;
     });
   })();
   return `
@@ -1217,7 +1224,7 @@ function reportHTML(childId, month) {
     <h3>1回ごとの記録</h3>
     <table class="list"><tr><th>日時</th><th>単元</th><th>点数</th><th></th></tr>
       ${A.slice().reverse().map(a => `<tr><td>${a.at.slice(5, 16).replace('T', ' ').replace('-', '/')}</td><td>${Furigana.render(UNITS[a.unit].name, 'none')}</td><td>${a.score}/${a.total}</td>
-      <td><details><summary>10問を見る</summary><table class="check">${a.questions.map((q, k) => `<tr><td>${k + 1}</td><td>${Furigana.render(q.text, 'none')}</td><td>最初の答え：${ansText(a.unit, q.first, q.boxes)}</td><td>正しい答え：${ansText(a.unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${q.ok ? '' : q.fixed ? '直した' : '直していない'}</td></tr>`).join('')}</table></details></td></tr>`).join('') || '<tr><td colspan="4">この月の記録はありません</td></tr>'}
+      <td><details><summary>10問を見る</summary><table class="check">${a.questions.map((q, k) => `<tr><td>${k + 1}</td><td>${Furigana.render(noBtn(q.text), 'none')}</td><td>最初の答え：${ansText(a.unit, q.first, q.boxes)}</td><td>正しい答え：${ansText(a.unit, q.correct, q.boxes)}</td><td>${q.ok ? '○' : '×'}</td><td>${q.ok ? '' : q.fixed ? '直した' : '直していない'}</td></tr>`).join('')}</table></details></td></tr>`).join('') || '<tr><td colspan="4">この月の記録はありません</td></tr>'}
     </table>`;
 }
 function bindReport(childId) { const s = $('#mon'); if (s) s.onchange = () => { $('#rep').innerHTML = reportHTML(childId, s.value); bindReport(childId); }; }
