@@ -6,7 +6,8 @@
 (() => {
   const pick = a => a[rand(0, a.length - 1)];
   const F = s => typeof s !== 'string' ? s : s.replace(/([一-鿿々]+)\(([ぁ-ゖー]+)\)/g, '{$1|$2}');
-  const big = s => `<span class="big">${s}</span>`;
+  // 「I（〜は）　my（〜の）」のような ならびは、1つずつの 中で 改行しない（2026年11月15日：「〜を・〜」で 切れていた）
+  const big = s => `<span class="big">${String(s).split('　').map(x => /^[A-Za-z〜.'’ ]{1,20}（[^（）　]+）$/.test(x) ? `<span style="white-space:nowrap">${x}</span>` : x).join('　')}</span>`;
   const gap = s => s.replace(/\( \)/g, '（　　）');
   const cap = s => s[0].toUpperCase() + s.slice(1);
   const ch = (stem, opts, correct, key, tate) => { const o = shuffle([...new Set(opts)]); return { key: (key || stem) + '#' + correct, text: F(`${stem}<br><span class="ch">${o.map((x, i) => `<b>${i + 1}</b> ${x}`).join(tate ? '<br>' : '　')}</span>`), boxes: [''], answer: [o.indexOf(correct) + 1] }; };
