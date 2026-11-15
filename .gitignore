@@ -1,0 +1,4 @@
+*.zip
+roadmap*.json
+.claude/
+Thumbs.db
