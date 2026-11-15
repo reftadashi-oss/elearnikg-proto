@@ -10,8 +10,8 @@ let idleTimer = null;
 // マネーラボの画面（子ども）は 30秒 さわらないと ログアウト（マネーラボ仕様書 8-1 の「共通」）。ほかの画面は IDLE_MIN 分
 const ML_IDLE_SEC = 30;
 const idleMs = () => me && me.role === 'child' && document.querySelector('main.ml') ? ML_IDLE_SEC * 1000 : IDLE_MIN * 60000;
-// 先生のアカウントは 自動ログアウトしない（2026年11月12日）
-function touch() { clearTimeout(idleTimer); if (me && me.role !== 'teacher') idleTimer = setTimeout(() => { if (typeof glossClose === 'function') glossClose(); logout(); alert('しばらく つかわなかったので、ログアウトしました'); }, idleMs()); }
+// 先生のアカウントは 自動ログアウトしない（2026年11月12日）。テスト用の アカウント（admin・admin1234）も しない（11月15日 社長）
+function touch() { clearTimeout(idleTimer); if (me && me.role !== 'teacher' && !me.test) idleTimer = setTimeout(() => { if (typeof glossClose === 'function') glossClose(); logout(); alert('しばらく つかわなかったので、ログアウトしました'); }, idleMs()); }
 ['click', 'keydown', 'wheel', 'touchstart'].forEach(e => document.addEventListener(e, touch, { passive: true }));
 
 function logout() { me = null; testBack = null; sessionStorage.removeItem('me'); bodyClass(); showLogin(); }
