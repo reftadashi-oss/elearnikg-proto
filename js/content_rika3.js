@@ -42,6 +42,8 @@
   const sB = RIKA_CHU('r11', '中学(ちゅうがく)の 生物(せいぶつ)', '中学の生物');
   const sE = RIKA_CHU('r12', '中学(ちゅうがく)の 地学(ちがく)', '中学の地学');
   const G = 7;
+  // 中2・中3の ファイルで 使う 道具
+  window.RIKA_KIT = { F, big, CHOOSE, ENTER, choiceQ, numQ, bank, mix, add, pick, sP, sC, sB, sE };
 
   // ================= 物理（中1：光・音・力） =================
   add(sP, G, '光の反射(はんしゃ)', mix(
