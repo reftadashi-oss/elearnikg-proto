@@ -214,12 +214,13 @@ const Store = (() => {
     return added;
   }
   // 遠くに 住む 親戚の 子に 使って もらう アカウント（2026年11月17日 社長）。どの 端末でも 同じ アカウントで 入れるよう、ここに 書く。
-  // 公開の リポジトリなので、名前は ひらがなの 下の 名前だけ（名字・漢字は 入れない）。ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
-  const GUESTS = [{ id: 'g1', username: 'miyu', name: 'みゆ' }, { id: 'g2', username: 'sawa', name: 'さわ' }];
+  // 本名を 公開の リポジトリに 入れる ことは 社長が 了承した（2026年11月17日「公開して OK」）。ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
+  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠（むらかみ みゆ）' }, { id: 'g2', username: 'sawa', name: '村上 沙環（むらかみ さわ）' }];
   async function addGuests() {
     let added = false;
     for (const t of GUESTS) {
-      if (S.users.find(u => u.username === t.username)) continue;
+      const old = S.users.find(u => u.username === t.username);
+      if (old) { if (old.noIdle && old.name !== t.name) { old.name = t.name; added = true; } continue; }
       S.users.push({ id: t.id, username: t.username, role: 'child', noIdle: true, name: t.name, grade: 1, salt: t.id, pw: await hash('1234', t.id), fails: 0, locked: false, opened: today() });
       S.attendance[t.id] = S.attendance[t.id] || []; added = true;
     }
