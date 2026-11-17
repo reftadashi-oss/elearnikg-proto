@@ -711,8 +711,12 @@ function questionHTML(q) {
   // リズムを打つ問題は、答えの箱とボタンを かくす（打ったあと、プログラムが入れて答える）
   if (q.tap) return `<div class="q">${R(q.text)} <span style="display:none">${boxes}</span></div><button class="primary" id="ok" style="display:none"></button>`;
   // えを おして えらぶ 問題（年長・年少の かず など）：ばんごうを 入れさせない（ばんごうと こたえの かずが まざるため。2026年11月17日）
-  if (q.pick) return `<div class="q">${R(q.text)} <span style="display:none">${boxes}</span></div>
-    <div class="pickrow">${q.pick.map((h, i) => `<button class="pickb" onclick="pickAns(${i + 1})">${R(h)}</button>`).join('')}</div>
+  // 「1 ミ　2 ソ　3 ファ」のように ばんごうで えらぶ 問題も、えらぶ ものを そのまま ボタンに する（数字の ボタンは 出さない。2026年11月17日 社長）
+  // キーボードで 1・2・3 を おして Enter でも こたえられる（かくした 箱に 入る）
+  const ap = !q.pick && autoPick(q);
+  if (ap) { q.pick = ap.pick; q.pickHTML = true; }
+  if (q.pick) return `${play}<div class="q">${ap ? ap.stem : R(q.text)} <span style="display:none">${boxes}</span></div>
+    <div class="pickrow">${q.pick.map((h, i) => `<button class="pickb" onclick="pickAns(${i + 1})">${q.pickHTML ? h : R(h)}</button>`).join('')}</div>
     <button class="primary" id="ok" style="display:none"></button><p class="msg" id="qmsg"></p>`;
   return `${play}<div class="q">${R(q.text)} ${boxes}</div>
     ${native ? `<p class="note">${R('{箱|はこ}を さわって、ひらがなで {入|い}れてね（{漢字|かんじ}に しない）')}</p>` : ''}
@@ -723,6 +727,30 @@ function questionHTML(q) {
     <p class="msg" id="qmsg"></p>
     <p>${q.kana && isTouch() ? `<button class="mini padtg" tabindex="-1" onclick="kanaToggle()">⌨ ${R(native ? '{画面|がめん}の あいうえお ボタンで {入|い}れる' : 'スマホの キーボードで {入|い}れる')}</button>`
       : `<button class="mini padtg" tabindex="-1" onclick="padToggle()">⌨ ${R(padOn() ? '{画面|がめん}の ボタンを かくす' : '{画面|がめん}の ボタンで {入|い}れる')}</button>`}</p>`;
+}
+// 問題文の <span class="ch"> の 中の「<b>1</b> …」を、えらぶ ものの ならびに する。形が ちがう ときは null（ふつうの 箱の まま）
+function autoPick(q) {
+  if (q.tap || q.kana || q.latin || q.keys || q.arrows || q.judge || q.boxes.length !== 1 || q.answer.length !== 1) return null;
+  if (!/class="ch"/.test(q.text)) return null;
+  const d = document.createElement('div'); d.innerHTML = R(q.text);
+  const ch = d.querySelector('.ch'); if (!ch || ch.querySelector('.ch')) return null;
+  // <i class="nf">（ふりがなを つけない など）で ぜんぶ つつんで ある ときは、中を 見て、ボタンごとに 同じ つつみを つける
+  let box = ch; const wraps = [];
+  while (box.children.length === 1 && ![...box.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && box.firstElementChild.nodeName !== 'B') { box = box.firstElementChild; wraps.push(box); }
+  const mk = () => { const sp = document.createElement('span'); let in_ = sp; for (const w of wraps) { const c = w.cloneNode(false); in_.appendChild(c); in_ = c; } return [sp, in_]; };
+  const opts = [], nums = []; let cur = null;
+  for (const n of [...box.childNodes]) {
+    if (n.nodeName === 'B' && /^\d+$/.test(n.textContent.trim())) { nums.push(+n.textContent.trim()); const [sp, in_] = mk(); opts.push(sp); cur = in_; continue; }
+    if (cur) cur.appendChild(n.cloneNode(true)); else if (n.textContent.trim()) return null;
+  }
+  if (opts.length < 2 || opts.length > 8 || nums.some((x, i) => x !== i + 1)) return null;
+  opts.forEach(o => { const tw = document.createTreeWalker(o, NodeFilter.SHOW_TEXT), ts = []; while (tw.nextNode()) ts.push(tw.currentNode);
+    if (ts.length) { ts[0].textContent = ts[0].textContent.replace(/^[\s　]+/, ''); const l = ts[ts.length - 1]; l.textContent = l.textContent.replace(/[\s　]+$/, ''); } });
+  if (opts.some(o => !o.textContent.trim() && !o.querySelector('img,svg'))) return null;
+  const pick = opts.map(o => o.innerHTML.replace(/^(?:\s|&nbsp;|　|<br\s*\/?>)+|(?:\s|&nbsp;|　|<br\s*\/?>)+$/g, ''));
+  if (pick.some(h => !h) || !(Number(q.answer[0]) >= 1 && Number(q.answer[0]) <= pick.length)) return null;
+  ch.remove();
+  return { stem: d.innerHTML.replace(/(?:\s|<br\s*\/?>)+$/, ''), pick };
 }
 function pickAns(i) { const el = document.querySelector('.ans'); if (!el || !$('#ok')) return; el.dataset.raw = el.value = String(i); $('#ok').click(); }
 function kanaPad() {
@@ -828,7 +856,7 @@ function showFix(wrong) {
   if (!cur.fix.length) { Store.save(); return showResult(); }
   const k = cur.fix[0], a = cur.answers[k], q = cur.qs[k]; cur.redraw = () => showFix();
   app().innerHTML = unitHeader() + `<main class="center"><p>${R('なおそう')}（${R('のこり')} ${cur.fix.length}）</p>${questionHTML(q)}
-    ${cur.tries >= 2 ? `<p class="hint">${R('こたえ')}：${q.pick ? R(q.pick[q.answer[0] - 1]) : ansText(cur.unit.id, q.answer.map(String), q.boxes)}</p>` : ''}<p class="msg" id="fmsg">${wrong === true ? R('ちがうよ。もう {一度|いちど} やって みよう') : ''}</p></main>`;
+    ${cur.tries >= 2 ? `<p class="hint">${R('こたえ')}：${q.pick ? (q.pickHTML ? q.pick[q.answer[0] - 1] : R(q.pick[q.answer[0] - 1])) : ansText(cur.unit.id, q.answer.map(String), q.boxes)}</p>` : ''}<p class="msg" id="fmsg">${wrong === true ? R('ちがうよ。もう {一度|いちど} やって みよう') : ''}</p></main>`;
   bindInput(q, ans => {
     if (isRight(q, ans)) { a.fixed = true; cur.fix.shift(); cur.tries = 0; showFix(); }
     else { cur.tries++; showFix(true); }
