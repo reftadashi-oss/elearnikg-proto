@@ -299,6 +299,12 @@ function unitStep(u, hist) {
 }
 const canOpen = (u, hist) => unitStep(u, hist) !== 'lock' || assignPending(me.id, hist).some(a => a.unit === u);
 
+// スマホ（指だけで さわる 小さい 画面）では、キーボードや 音が いる 科目を 出さない（2026年11月18日 社長）
+// パソコン（キーボード・ローマ字・ロボット）と 音楽。タブレット（短い 辺が 600px 以上）・パソコンでは 出す
+const PC_ONLY = new Set(['x0', 'x2']);
+const isPhone = () => matchMedia('(pointer: coarse) and (hover: none)').matches && Math.min(screen.width, screen.height) < 600;
+const hideSubj = s => !!s && isPhone() && PC_ONLY.has(s.id);
+const hideUnit = u => { const U = UNITS[u]; if (!U) return false; const se = seriesById(U.series); return hideSubj(se && subjectOf(se)); };
 function recommendations(hist) {
   const rec = [];
   // 苦手まとめ（試作品では、苦手な単元をもう一度）
@@ -307,10 +313,10 @@ function recommendations(hist) {
   const subjOrder = me.grade <= 3 ? [...SUBJECTS].sort((a, b) => (b.id === 'math') - (a.id === 'math')) : SUBJECTS;
   if (me.label) subjOrder.sort((a, b) => (b.id === 'x7') - (a.id === 'x7'));   // 年長・年少の 子は ひらがな・カタカナを いちばん 先に おすすめ
   // オプションの科目（詰将棋）は おすすめに 出さない。やりたい子が「すすみぐあい」から えらぶ
-  const series = subjOrder.filter(s => !OPTIONAL.has(s.id)).flatMap(s => s.series).filter(se => se.units.length);
+  const series = subjOrder.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s)).flatMap(s => s.series).filter(se => se.units.length);
   const real = se => se.units.filter(u => !UNITS[u].extra);
   series.forEach(se => { const id = `weak-${se.id}`; if (Review.ready(se.id, hist) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: '{苦手|にがて}' }); });
-  Rules.weakUnits(hist).filter(w => !UNITS[w.unit].extra && !OPTIONAL.has(subjectOf(seriesById(UNITS[w.unit].series))?.id) &&!Rules.unitState(hist, w.unit).finished).forEach(w => rec.push({ unit: w.unit, why: '{苦手|にがて}' }));
+  Rules.weakUnits(hist).filter(w => !UNITS[w.unit].extra && !hideUnit(w.unit) && !OPTIONAL.has(subjectOf(seriesById(UNITS[w.unit].series))?.id) &&!Rules.unitState(hist, w.unit).finished).forEach(w => rec.push({ unit: w.unit, why: '{苦手|にがて}' }));
   for (const se of series) for (const u of real(se)) { const st = Rules.unitState(hist, u); if (!st.perfect && (st.tries || !cleared(hist, u))) rec.push({ unit: u, why: 'つぎの{単元|たんげん}' }); }   // 学年の スタートで とばした 単元（やって いない）は すすめない
   for (const se of series) for (const u of real(se)) { if (Rules.unitState(hist, u).reviewNext) rec.push({ unit: u, why: '{復習|ふくしゅう}' }); }
   series.forEach(se => { const id = `all-${se.id}`; if (real(se).every(u => Rules.unitState(hist, u).tries) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: 'まとめ' }); });
@@ -326,9 +332,9 @@ function showTop() {
     const tag = st.finished ? R('おしまい') : st.reviewNext ? R('あと1{回|かい}') : st.retake ? R('もう{一度|いちど}') : st.tries ? R(`さいこう ${st.best}{点|てん}`) : '';
     return `<button class="unit ${st.finished ? 'done' : ''} ${why === 'いま' ? 'now' : ''}" onclick="startUnit('${u}')">${why ? `<small>${R(why)}</small>` : ''}<span class="nm">${R(U.name)}</span><span class="tag">${tag}</span></button>`;
   };
-  const hw = [...new Set(assignPending(me.id, hist).map(a => a.unit))];
+  const hw = [...new Set(assignPending(me.id, hist).map(a => a.unit))].filter(u => !hideUnit(u));
   const rec = recommendations(hist).filter(r => !hw.includes(r.unit));
-  app().innerHTML = header(`<button onclick="Typing.menu()">${R('タイピング')}</button><button onclick="showAccount()">${R('{口座|こうざ}')}</button><button onclick="Transfer.showCopy(me.id)">${R('{記録|きろく}を コピー')}</button><button onclick="Transfer.showLoad(() => showTop())">${R('{記録|きろく}を {読|よ}みこむ')}</button>`) + `
+  app().innerHTML = header(`${isPhone() ? '' : `<button onclick="Typing.menu()">${R('タイピング')}</button>`}<button onclick="showAccount()">${R('{口座|こうざ}')}</button><button onclick="Transfer.showCopy(me.id)">${R('{記録|きろく}を コピー')}</button><button onclick="Transfer.showLoad(() => showTop())">${R('{記録|きろく}を {読|よ}みこむ')}</button>`) + `
   <main>
     ${todayDots()}
     ${hw.length ? `<h2>${R('{先生|せんせい}からの{宿題|しゅくだい}')}</h2><div class="units rec-sub">${hw.map(u => unitBtn(u, '{宿題|しゅくだい}')).join('')}</div>` : ''}
@@ -338,9 +344,9 @@ function showTop() {
     <h2>${R('すすみぐあい')}</h2>
     <p class="note">${R('{合格|ごうかく}すると、{次|つぎ}の {単元|たんげん}が ひらくよ。{国語|こくご}と {算数|さんすう}は、その {学年|がくねん}の {単元|たんげん}が ぜんぶ {合格|ごうかく}に なると「{仕上|しあ}げ」が ひらくよ。{仕上|しあ}げに {合格|ごうかく}すると、{次|つぎ}の {学年|がくねん}へ すすめるよ。')}</p>
     ${finBox(hist, unitBtn)}
-    ${SUBJECTS.filter(s => !OPTIONAL.has(s.id)).map(s => roadSubject(s, hist, unitBtn)).join('')}
+    ${SUBJECTS.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s)).map(s => roadSubject(s, hist, unitBtn)).join('')}
     <h2>${R('オプション')} <small class="prog">${R('すきな ときに')}</small></h2>
-    ${SUBJECTS.filter(s => OPTIONAL.has(s.id)).map(s => roadSubject(s, hist, unitBtn)).join('')}
+    ${SUBJECTS.filter(s => OPTIONAL.has(s.id) && !hideSubj(s)).map(s => roadSubject(s, hist, unitBtn)).join('')}
   </main>`;
 }
 // 先生の画面（子どもごと）：シリーズごとに「いまの単元」を えらびなおす。前に もどす＝差し戻し、後ろ＝先に進める
