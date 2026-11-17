@@ -214,8 +214,8 @@ const Store = (() => {
     return added;
   }
   // 遠くに 住む 親戚の 子に 使って もらう アカウント（2026年11月17日 社長）。どの 端末でも 同じ アカウントで 入れるよう、ここに 書く。
-  // 本名を 公開の リポジトリに 入れる ことは 社長が 了承した（2026年11月17日「公開して OK」）。ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
-  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠（むらかみ みゆ）' }, { id: 'g2', username: 'sawa', name: '村上 沙環（むらかみ さわ）' }];
+  // 名前は 社長の 指定（2026年11月17日）。年長・年少の 子だが、内容は ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
+  const GUESTS = [{ id: 'g1', username: 'miyu', name: 'みゆ（年長）' }, { id: 'g2', username: 'sawa', name: 'さわ（年少）' }];
   async function addGuests() {
     let added = false;
     for (const t of GUESTS) {
