@@ -85,7 +85,8 @@ let parentKid = null;
 // ================= 子どものトップ =================
 // ruto＝普通預金の残高を出すか。Eラーニングの画面では出さない（2026年11月12日。口座の画面だけ出す）
 function header(extra = '', ruto = false) {
-  return `<header><span>${esc(me.name)}（${Furigana.gradeLabel(me.grade, me.grade)}）</span>
+  // 親戚の 子（noIdle）は 名前に 年長・年少が 入って いるので、学年（1ねん）は 出さない
+  return `<header><span>${esc(me.name)}${me.noIdle ? '' : `（${Furigana.gradeLabel(me.grade, me.grade)}）`}</span>
     ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}${extra}
     ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
 }
