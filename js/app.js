@@ -325,7 +325,7 @@ function showTop() {
   };
   const hw = [...new Set(assignPending(me.id, hist).map(a => a.unit))];
   const rec = recommendations(hist).filter(r => !hw.includes(r.unit));
-  app().innerHTML = header(`<button onclick="Typing.menu()">${R('タイピング')}</button><button onclick="showAccount()">${R('{口座|こうざ}')}</button>`) + `
+  app().innerHTML = header(`<button onclick="Typing.menu()">${R('タイピング')}</button><button onclick="showAccount()">${R('{口座|こうざ}')}</button><button onclick="Transfer.showCopy(me.id)">${R('{記録|きろく}を コピー')}</button><button onclick="Transfer.showLoad(() => showTop())">${R('{記録|きろく}を {読|よ}みこむ')}</button>`) + `
   <main>
     ${todayDots()}
     ${hw.length ? `<h2>${R('{先生|せんせい}からの{宿題|しゅくだい}')}</h2><div class="units rec-sub">${hw.map(u => unitBtn(u, '{宿題|しゅくだい}')).join('')}</div>` : ''}
@@ -1088,7 +1088,7 @@ function showTeacher(tab) {
       ${assignTable(kids)}
       ${hardQuestions(kids)}`;
   } else if (tTab === 'child') {
-    body = `<select id="kid">${kids.map(c => `<option value="${c.id}" ${c.id === tKid ? 'selected' : ''}>${esc(c.name)}（${c.grade}年）</option>`).join('')}</select><div id="rep"></div>`;
+    body = `<select id="kid">${kids.map(c => `<option value="${c.id}" ${c.id === tKid ? 'selected' : ''}>${esc(c.name)}（${c.grade}年）</option>`).join('')}</select> <button onclick="Transfer.showCopy($('#kid').value)">この子の 記録を コピー</button> <button onclick="Transfer.showLoad(id => { tKid = id; showTeacher('child'); })">記録を 読みこむ</button><div id="rep"></div>`;
   } else if (tTab === 'plan') {
     body = planHTML();
   } else if (tTab === 'ml') {
