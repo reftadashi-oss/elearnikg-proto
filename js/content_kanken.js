@@ -163,6 +163,7 @@
   if (typeof KANKEN_UPPER !== 'undefined') {
     if (KANKEN_UPPER.k4) upper('k4', KANKEN_UPPER.kanji4, KANKEN_UPPER.k4);
     if (KANKEN_UPPER.k3) upper('k3', KANKEN_UPPER.kanji3, KANKEN_UPPER.k3);
+    if (KANKEN_UPPER.k2p) upper('k2p', KANKEN_UPPER.kanji2p, KANKEN_UPPER.k2p);   // 準2級（kanken_p2.js）
   }
 
   // ---- 8級〜5級の部首・送り仮名・対義語など（画面で書かないので、えらぶ形と読みを打つ形・仮） ----
@@ -296,7 +297,7 @@
   // ---- 画数・部首を、その級の全部の字に（kanji_info.js。ウィキペディアの常用漢字一覧から・仮） ----
   if (typeof KANJI_INFO !== 'undefined') {
     const LV = { k10: 0, k9: 1, k8: 2, k7: 3, k6: 4, k5: 5 };
-    const kanjiOf = sid => sid in LV ? [...KANJI_BY_GRADE[LV[sid]]] : [...KANKEN_UPPER[sid === 'k4' ? 'kanji4' : 'kanji3']];
+    const kanjiOf = sid => sid in LV ? [...KANJI_BY_GRADE[LV[sid]]] : [...KANKEN_UPPER[{ k4: 'kanji4', k3: 'kanji3', k2p: 'kanji2p' }[sid]]];
     const chunks = (a, size) => { const n = Math.max(1, Math.round(a.length / size)); return Array.from({ length: n }, (_, i) => a.slice(Math.round(i * a.length / n), Math.round((i + 1) * a.length / n))); };
     const NUM = '①②③④⑤⑥⑦⑧⑨⑩';
     // 部首の見せ方（へん・かんむりの形も見せる）
@@ -313,7 +314,7 @@
     const HLEC = typeof KANJI_STROKES === 'undefined' ? [] : [
       `{漢字|かんじ}は {書|か}く {順番|じゅんばん}（{筆順|ひつじゅん}）が {決|き}まって いるよ。<br>${strokeSvg('右', undefined, true)} ${strokeSvg('左', undefined, true)}<br>「みぎ」と「ひだり」は 1{画目|かくめ}と 2{画目|かくめ}が ぎゃく。`,
       `{赤|あか}い {線|せん}は {何画目|なんかくめ}かな？<br>${strokeSvg('田', 2)}<br>こたえ：3（{数|かず}を テンキーで いれて Enter）`];
-    Object.entries({ k10: 0.8, k9: 0.8, k8: 0.8, k7: 0.7, k6: 0.7, k5: 0.7, k4: 0.7, k3: 0.7 }).forEach(([sid, pass]) => {
+    Object.entries({ k10: 0.8, k9: 0.8, k8: 0.8, k7: 0.7, k6: 0.7, k5: 0.7, k4: 0.7, k3: 0.7, k2p: 0.7 }).forEach(([sid, pass]) => {
       const ser = k.series.find(s => s.id === sid), ks = kanjiOf(sid).filter(c => KANJI_INFO[c]);
       // 画数：前からある「画数①②」の単元は、全部の字を分けたものに入れかえる
       const old = ser.units.filter(id => UNITS[id] && UNITS[id].col === BU && /画数/.test(UNITS[id].name));
@@ -332,7 +333,7 @@
       // 筆順：赤い線は何画目か（kanji_strokes.js。KanjiVG から・仮）。画数が kanji_info.js と合わない字は出さない
       if (typeof KANJI_STROKES !== 'undefined') {
         const hk = ks.filter(c => KANJI_STROKES[c] && KANJI_STROKES[c].split('|').length === KANJI_INFO[c].n && KANJI_INFO[c].n >= 2);
-        chunks(hk, 40).forEach((list, i) => {
+        if (hk.length) chunks(hk, 40).forEach((list, i) => {   // 筆順の データが ない 級（準2級）は 作らない
           const id = `${sid}-h${i + 1}`;
           UNITS[id] = { id, subject: 'kanken', series: sid, name: `{筆順|ひつじゅん}${NUM[i]}`, col: BU, pass, lecture: HLEC,
             make: () => shuffle(list).slice(0, 10).map(c => {
