@@ -20,6 +20,7 @@
     ], `${note}<br>${L.slice(0, 12).map(([e, j]) => `${e}（${j}）`).join('　')}`, `${L.slice(12).map(([e, j]) => `${e}（${j}）`).join('　')}<br>番号(ばんごう)の 問題(もんだい)は ${CHOOSE}<br>つづりの 問題(もんだい)は ${TYPE}`);
   };
 
+  Object.assign(EIGO, { vocab, vocabSeries: W });   /* content_eigo5.js（単語の つづき）から 使う */
   // ================= 中1 =================
   vocab(7, '数(かず)と 順番(じゅんばん)', 'one=1|two=2|three=3|four=4|five=5|six=6|seven=7|eight=8|nine=9|ten=10|eleven=11|twelve=12|thirteen=13|fifteen=15|twenty=20|thirty=30|forty=40|fifty=50|hundred=100|thousand=1000|first=1番目(ばんめ)|second=2番目(ばんめ)|third=3番目(ばんめ)|fourth=4番目(ばんめ)|fifth=5番目(ばんめ)|ninth=9番目(ばんめ)|twelfth=12番目(ばんめ)|twentieth=20番目(ばんめ)',
     `つづりに 気(き)を つける 数(かず)：${big('forty')}（fourty ではない）・${big('fifth')}・${big('ninth')}・${big('twelfth')}`);
