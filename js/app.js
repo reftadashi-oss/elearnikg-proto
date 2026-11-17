@@ -683,7 +683,7 @@ function showPhones(next) {
 }
 function startQuiz() { if (hasSound() && !cur.phonesOk) return showPhones(startQuiz); cur.i = 0; cur.answers = []; cur.shownAt = Date.now(); showQuestion(); }
 
-const LAB_AFTER = new Set(['市', '時', '分', '秒', '時間', '画']);
+const LAB_AFTER = new Set(['市', '時', '分', '秒', '時間', '画', '月']);
 // 画面の ボタンで 答えを 入れる（タブレット・スマホ用。2026年11月13日）。指で さわる 画面では はじめから on。「⌨」で 切りかえ（その ブラウザで おぼえる）
 const padOn = () => { try { const v = localStorage.getItem('root-pad'); if (v !== null) return v === '1'; } catch (e) { /* 使えないときは 下へ */ } return matchMedia('(pointer: coarse)').matches; };
 function padToggle() { try { localStorage.setItem('root-pad', padOn() ? '0' : '1'); } catch (e) { /* そのまま */ } if (cur && cur.redraw) cur.redraw(); }

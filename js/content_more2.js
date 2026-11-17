@@ -111,7 +111,9 @@
   E('x3e-9', '曜日(ようび)', 3, [...vocab(DAYS), ...DAYS.map((d, i) => () => { const n = DAYS[(i + 1) % 7]; return choice(`${big(d[1])} の 次(つぎ)の 曜日(ようび)は？`, [n[1], ...others(DAYS, (i + 1) % 7, x => x[1]).filter(x => x !== d[1]).slice(0, 2)], n[1], 'n' + i); })],
     [`曜日(ようび)の 英語(えいご)は、さいごが みんな ${big('day')}。<br>${big('Sunday Monday Tuesday')}`, `${big('Wednesday Thursday Friday Saturday')}<br>英語(えいご)の 曜日(ようび)は、はじめの 文字(もじ)を 大文字(おおもじ)で 書(か)くよ。<br>${CHOOSE}`]);
   const MON = 'January February March April May June July August September October November December'.split(' ').map((e, i) => [`${i + 1}月(がつ)`, e]);
-  E('x3e-10', '月(つき)の 名前(なまえ)', 5, [...vocab(MON), ...MON.map((m, i) => () => { const n = MON[(i + 1) % 12]; return choice(`${big(m[1])} の 次(つぎ)の 月(つき)は？`, [n[1], ...others(MON, (i + 1) % 12, x => x[1]).filter(x => x !== m[1]).slice(0, 2)], n[1], 'n' + i); })],
+  // 英語 → 何月：ばんごうで えらばせると「1 5月 2 8月」のように ばんごうと 月が まざるので、月の かずを 入れる（2026年11月17日）
+  const monNum = MON.map(([j, e], i) => () => ({ key: 'b' + e + '#' + (i + 1), text: F(`${big(e)}<br>なん月(がつ)？ かずを 入(い)れよう。`), boxes: ['{月|がつ}'], answer: [i + 1] }));
+  E('x3e-10', '月(つき)の 名前(なまえ)', 5, [...vocab(MON).filter((f, k) => k % 2 === 0), ...monNum, ...MON.map((m, i) => () => { const n = MON[(i + 1) % 12]; return choice(`${big(m[1])} の 次(つぎ)の 月(つき)は？`, [n[1], ...others(MON, (i + 1) % 12, x => x[1]).filter(x => x !== m[1]).slice(0, 2)], n[1], 'n' + i); })],
     [`1月(がつ)から 12月(がつ)まで、それぞれ 名前(なまえ)が あるよ。<br>${big('January February March April')}`, `${big('May June July August')}<br>${big('September October November December')}<br>${CHOOSE}`]);
   const TEENS = 'eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(' ');
   E('x3e-11', '数(かず)（11〜20）', 3, [
