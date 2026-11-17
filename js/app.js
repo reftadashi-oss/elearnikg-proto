@@ -838,13 +838,15 @@ function grade() {
   let r = Rules.judge({ history: hist, unit: cur.unit, qs: cur.answers, day: Store.today(), holiday: holiday() });
   r = Object.assign(r, { at: new Date().toISOString(), questions: cur.answers });
   cur.result = Store.addAttempt(me.id, r);
-  const fmt = (a, x) => ansText(cur.unit.id, a, x.boxes);
+  // ボタンで えらんだ 問題は、ばんごうでは なく えらんだ もの（「laugh at 〜」など）を 出す（2026年11月17日）
+  const fmt = (a, x) => { const ap = autoPick({ text: x.text, boxes: x.boxes, answer: x.correct }), i = Number(a[0]) - 1;
+    return ap && ap.pick[i] ? ap.pick[i] : ansText(cur.unit.id, a, x.boxes); };
   // 正しい 答え：このあと「なおす」が ない 回（合格に 届かなかった 回 など）は、表に 出す（2026年11月13日）。なおす 回は、自分で なおしてから（2回 まちがえると 出る）
   // 1回目の 不合格では 出さない（講義から もう一度）。同じ 単元で 2回 つづけて 不合格に なったら 出す（2026年11月13日 社長）
   const needFix = cur.unit.kind === 'fin' ? !r.passed && !r.perfect : r.passed && !r.perfect, showAns = !needFix && !r.passed && cur.st.failStreak >= 1;
   app().innerHTML = unitHeader() + `<main>
     <h2>${R('こたえあわせ')}：${r.score} / ${r.total}</h2>
-    <table class="check"><tr><th></th><th>${R('{問題|もんだい}')}</th><th>${R('きみの {答|こた}え')}</th><th></th>${showAns ? `<th>${R('{正|ただ}しい {答|こた}え')}</th>` : ''}</tr>
+    <table class="check"><tr><th></th><th>${R('{問題|もんだい}')}</th><th style="white-space:nowrap">${R('あなたの {答|こた}え')}</th><th></th>${showAns ? `<th style="white-space:nowrap">${R('{正|ただ}しい {答|こた}え')}</th>` : ''}</tr>
     ${cur.answers.map((a, k) => `<tr><td>${k + 1}</td><td>${R(noBtn(a.text))}</td><td>${fmt(a.first, a)}</td><td class="${a.ok ? 'ok' : 'ng'}">${a.ok ? '○' : '×'}</td>${showAns ? `<td class="hint"><b>${a.ok ? '' : fmt(a.correct.map(String), a)}</b></td>` : ''}</tr>`).join('')}</table>
     <div class="center">${cur.unit.kind === 'fin' ? (r.passed ? '' : `<p>${R('まちがえた {問題|もんだい}を なおそう')}</p>`) : ''}${needFix ? `<button class="primary big" onclick="startFix()">${R('まちがえた{問題|もんだい}を なおす')}</button>`
       : `<button class="primary big" onclick="showResult()">${R('つぎへ')}</button>`}</div></main>`;
