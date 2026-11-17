@@ -707,6 +707,10 @@ function questionHTML(q) {
   const play = q.sound ? `<p><button class="play" tabindex="-1" onmousedown="event.preventDefault()" onclick="Snd.play(Snd.cur, undefined, Snd.metro)">▶ きく</button></p>` : '';
   // リズムを打つ問題は、答えの箱とボタンを かくす（打ったあと、プログラムが入れて答える）
   if (q.tap) return `<div class="q">${R(q.text)} <span style="display:none">${boxes}</span></div><button class="primary" id="ok" style="display:none"></button>`;
+  // えを おして えらぶ 問題（年長・年少の かず など）：ばんごうを 入れさせない（ばんごうと こたえの かずが まざるため。2026年11月17日）
+  if (q.pick) return `<div class="q">${R(q.text)} <span style="display:none">${boxes}</span></div>
+    <div class="pickrow">${q.pick.map((h, i) => `<button class="pickb" onclick="pickAns(${i + 1})">${R(h)}</button>`).join('')}</div>
+    <button class="primary" id="ok" style="display:none"></button><p class="msg" id="qmsg"></p>`;
   return `${play}<div class="q">${R(q.text)} ${boxes}</div>
     ${native ? `<p class="note">${R('{箱|はこ}を さわって、ひらがなで {入|い}れてね（{漢字|かんじ}に しない）')}</p>` : ''}
     ${q.kana && !native && !useKanaButtons() ? `<p class="note">${R('ローマ{字|じ}で {打|う}つと ひらがなに なるよ')}</p>` : ''}
@@ -717,6 +721,7 @@ function questionHTML(q) {
     <p>${q.kana && isTouch() ? `<button class="mini padtg" tabindex="-1" onclick="kanaToggle()">⌨ ${R(native ? '{画面|がめん}の あいうえお ボタンで {入|い}れる' : 'スマホの キーボードで {入|い}れる')}</button>`
       : `<button class="mini padtg" tabindex="-1" onclick="padToggle()">⌨ ${R(padOn() ? '{画面|がめん}の ボタンを かくす' : '{画面|がめん}の ボタンで {入|い}れる')}</button>`}</p>`;
 }
+function pickAns(i) { const el = document.querySelector('.ans'); if (!el || !$('#ok')) return; el.dataset.raw = el.value = String(i); $('#ok').click(); }
 function kanaPad() {
   return `<div class="pad">${Kana.ROWS.map(r => `<div>${[...r].map(c => c === ' ' ? '<span></span>' : `<button tabindex="-1" data-c="${c}">${c}</button>`).join('')}</div>`).join('')}
     <div><button data-c="゛">゛</button><button data-c="゜">゜</button><button data-c="⌫" class="wide">けす</button></div></div>`;
@@ -820,7 +825,7 @@ function showFix(wrong) {
   if (!cur.fix.length) { Store.save(); return showResult(); }
   const k = cur.fix[0], a = cur.answers[k], q = cur.qs[k]; cur.redraw = () => showFix();
   app().innerHTML = unitHeader() + `<main class="center"><p>${R('なおそう')}（${R('のこり')} ${cur.fix.length}）</p>${questionHTML(q)}
-    ${cur.tries >= 2 ? `<p class="hint">${R('こたえ')}：${ansText(cur.unit.id, q.answer.map(String), q.boxes)}</p>` : ''}<p class="msg" id="fmsg">${wrong === true ? R('ちがうよ。もう {一度|いちど} やって みよう') : ''}</p></main>`;
+    ${cur.tries >= 2 ? `<p class="hint">${R('こたえ')}：${q.pick ? R(q.pick[q.answer[0] - 1]) : ansText(cur.unit.id, q.answer.map(String), q.boxes)}</p>` : ''}<p class="msg" id="fmsg">${wrong === true ? R('ちがうよ。もう {一度|いちど} やって みよう') : ''}</p></main>`;
   bindInput(q, ans => {
     if (isRight(q, ans)) { a.fixed = true; cur.fix.shift(); cur.tries = 0; showFix(); }
     else { cur.tries++; showFix(true); }
