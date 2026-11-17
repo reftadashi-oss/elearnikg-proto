@@ -215,13 +215,13 @@ const Store = (() => {
   }
   // 遠くに 住む 親戚の 子に 使って もらう アカウント（2026年11月17日 社長）。どの 端末でも 同じ アカウントで 入れるよう、ここに 書く。
   // 本名を 出す ことは 社長が 了承した（2026年11月17日）。年長・年少の 子なので、画面の 上には 学年の かわりに label を 出す。内容は ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
-  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠（むらかみ みゆ）', label: '{年長|ねんちょう}' }, { id: 'g2', username: 'sawa', name: '村上 沙環（むらかみ さわ）', label: '{年少|ねんしょう}' }];
+  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠', ruby: '{村上|むらかみ} {望悠|みゆ}', label: '{年長|ねんちょう}' }, { id: 'g2', username: 'sawa', name: '村上 沙環', ruby: '{村上|むらかみ} {沙環|さわ}', label: '{年少|ねんしょう}' }];
   async function addGuests() {
     let added = false;
     for (const t of GUESTS) {
       const old = S.users.find(u => u.username === t.username);
-      if (old) { if (old.noIdle && (old.name !== t.name || old.label !== t.label)) { old.name = t.name; old.label = t.label; added = true; } continue; }
-      S.users.push({ id: t.id, username: t.username, role: 'child', noIdle: true, name: t.name, label: t.label, grade: 1, salt: t.id, pw: await hash('1234', t.id), fails: 0, locked: false, opened: today() });
+      if (old) { if (old.noIdle && (old.name !== t.name || old.label !== t.label || old.ruby !== t.ruby)) { old.name = t.name; old.label = t.label; old.ruby = t.ruby; added = true; } continue; }
+      S.users.push({ id: t.id, username: t.username, role: 'child', noIdle: true, name: t.name, ruby: t.ruby, label: t.label, grade: 1, salt: t.id, pw: await hash('1234', t.id), fails: 0, locked: false, opened: today() });
       S.attendance[t.id] = S.attendance[t.id] || []; added = true;
     }
     return added;
