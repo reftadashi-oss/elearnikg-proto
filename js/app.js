@@ -85,8 +85,8 @@ let parentKid = null;
 // ================= 子どものトップ =================
 // ruto＝普通預金の残高を出すか。Eラーニングの画面では出さない（2026年11月12日。口座の画面だけ出す）
 function header(extra = '', ruto = false) {
-  // 親戚の 子（noIdle）は 名前に 年長・年少が 入って いるので、学年（1ねん）は 出さない
-  return `<header><span>${esc(me.name)}${me.noIdle ? '' : `（${Furigana.gradeLabel(me.grade, me.grade)}）`}</span>
+  // 親戚の 子は 年長・年少なので、学年（1ねん）の かわりに label（ねんちょう など）を 出す。内容は 1年生
+  return `<header><span>${esc(me.name)}（${me.label ? esc(me.label) : Furigana.gradeLabel(me.grade, me.grade)}）</span>
     ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}${extra}
     ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
 }
@@ -302,6 +302,7 @@ function recommendations(hist) {
   // おすすめの順（仕様書）：苦手まとめ → 苦手な単元 → 次の単元 → 復習 → まとめテスト
   // 1〜3年生は 計算（算数）を いちばん先に すすめる（2026年11月12日。基礎の 計算を しっかり）
   const subjOrder = me.grade <= 3 ? [...SUBJECTS].sort((a, b) => (b.id === 'math') - (a.id === 'math')) : SUBJECTS;
+  if (me.label) subjOrder.sort((a, b) => (b.id === 'x7') - (a.id === 'x7'));   // 年長・年少の 子は ひらがな・カタカナを いちばん 先に おすすめ
   // オプションの科目（詰将棋）は おすすめに 出さない。やりたい子が「すすみぐあい」から えらぶ
   const series = subjOrder.filter(s => !OPTIONAL.has(s.id)).flatMap(s => s.series).filter(se => se.units.length);
   const real = se => se.units.filter(u => !UNITS[u].extra);
