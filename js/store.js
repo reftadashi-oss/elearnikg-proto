@@ -215,7 +215,7 @@ const Store = (() => {
   }
   // 遠くに 住む 親戚の 子に 使って もらう アカウント（2026年11月17日 社長）。どの 端末でも 同じ アカウントで 入れるよう、ここに 書く。
   // 本名を 出す ことは 社長が 了承した（2026年11月17日）。年長・年少の 子なので、画面の 上には 学年の かわりに label を 出す。内容は ふつうの 1年生として 進む。自動ログアウト しない（app.js の noIdle）
-  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠（むらかみ みゆ）', label: 'ねんちょう' }, { id: 'g2', username: 'sawa', name: '村上 沙環（むらかみ さわ）', label: 'ねんしょう' }];
+  const GUESTS = [{ id: 'g1', username: 'miyu', name: '村上 望悠（むらかみ みゆ）', label: '{年長|ねんちょう}' }, { id: 'g2', username: 'sawa', name: '村上 沙環（むらかみ さわ）', label: '{年少|ねんしょう}' }];
   async function addGuests() {
     let added = false;
     for (const t of GUESTS) {
