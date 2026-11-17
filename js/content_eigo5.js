@@ -62,6 +62,28 @@
   vocab(9, '本(ほん)・メディア・表現(ひょうげん)', 'article=記事(きじ)|author=著者(ちょしゃ)|character=登場人物(とうじょうじんぶつ)・性格(せいかく)|comic=まんが|drama=劇(げき)・ドラマ|image=イメージ・画像(がぞう)|novel=小説(しょうせつ)|poem=詩(し)|poet=詩人(しじん)|program=番組(ばんぐみ)|scene=場面(ばめん)|title=題名(だいめい)|symbol=象徴(しょうちょう)・記号(きごう)|advertisement=広告(こうこく)|media=マスコミ・情報(じょうほう)媒体(ばいたい)|news=ニュース|audience=観客(かんきゃく)・聴衆(ちょうしゅう)|stage=舞台(ぶたい)|theater=劇場(げきじょう)|quiz=クイズ|statue=像(ぞう)|art museum=美術館(びじゅつかん)|gallery=画廊(がろう)|literature=文学(ぶんがく)',
     `${big('news')} は s で 終(お)わるが、数(かぞ)えられない 名詞(めいし)：${big('The news was surprising.')}`);
 
+  // ================= 中3の ならべかえ（文法 x3j3 に 足す。5つの 語句・2番目と 4番目） =================
+  const J3 = SUBJECTS.find(s => s.id === 'x3').series.find(s => s.id === 'x3j3');
+  if (J3 && EIGO.ord) {
+    const { add } = EIGO.kit(9);
+    const N3 = [['わたしは その博物館(はくぶつかん)に 3回(かい) 行(い)った ことが あります。', 'I have been', ['to', 'the', 'museum', 'three', 'times'], '.'], ['あなたは もう 宿題(しゅくだい)を 終(お)えましたか。', 'Have', ['you', 'finished', 'your', 'homework', 'yet'], '?'],
+      ['かれは 10年間(ねんかん) ずっと この 町(まち)に 住(す)んで います。', 'He', ['has', 'lived', 'in', 'this', 'town'], 'for ten years.'], ['けさから ずっと 雨(あめ)が ふって います。', 'It', ['has', 'been', 'raining', 'since', 'this'], 'morning.'],
+      ['ギターを ひいて いる 少年(しょうねん)は ケンです。', 'The', ['boy', 'playing', 'the', 'guitar', 'is'], 'Ken.'], ['これは 英語(えいご)で 書(か)かれた 本(ほん)です。', 'This', ['is', 'a', 'book', 'written', 'in'], 'English.'],
+      ['わたしには 中国(ちゅうごく)に 住(す)んで いる 友(とも)だちが います。', 'I', ['have', 'a', 'friend', 'who', 'lives'], 'in China.'], ['これは わたしが きのう 買(か)った かばんです。', 'This', ['is', 'the', 'bag', 'I', 'bought'], 'yesterday.'],
+      ['あなたは かれが どこに 住(す)んで いるか 知(し)って いますか。', 'Do', ['you', 'know', 'where', 'he', 'lives'], '?'], ['もし わたしが 鳥(とり)なら、空(そら)を 飛(と)べるのに。', 'If I were a bird, I', ['could', 'fly', 'in', 'the', 'sky'], '.'],
+      ['父(ちち)が 英語(えいご)を 話(はな)せたら いいのに。', 'I wish', ['my', 'father', 'could', 'speak', 'English'], '.'], ['母(はは)は わたしに 部屋(へや)を そうじさせた。', 'My mother', ['made', 'me', 'clean', 'my', 'room'], '.'],
+      ['あなたの 宿題(しゅくだい)を 手伝(てつだ)わせて ください。', 'Please', ['let', 'me', 'help', 'you', 'with'], 'your homework.'], ['わたしたちに とって 英語(えいご)を 勉強(べんきょう)する ことは 大切(たいせつ)です。', 'It', ['is', 'important', 'for', 'us', 'to'], 'study English.'],
+      ['わたしは かれに 手伝(てつだ)って ほしい。', 'I', ['want', 'him', 'to', 'help', 'me'], '.'], ['先生(せんせい)は わたしたちに 静(しず)かに するように 言(い)った。', 'Our teacher', ['told', 'us', 'to', 'be', 'quiet'], '.'],
+      ['わたしは この 機械(きかい)の 使(つか)い方(かた)が わかりません。', 'I', ["don't", 'know', 'how', 'to', 'use'], 'this machine.'], ['これは なんて 美(うつく)しい 花(はな)なのでしょう。', 'What', ['a', 'beautiful', 'flower', 'this', 'is'], '!'],
+      ['何(なに)を すれば よいか 教(おし)えて ください。', 'Please', ['tell', 'me', 'what', 'to', 'do'], '.'], ['かのじょは みんなに 愛(あい)されて いる 歌手(かしゅ)です。', 'She', ['is', 'a', 'singer', 'loved', 'by'], 'everyone.'],
+      ['あれは 約(やく)100年前(ねんまえ)に 建(た)てられた 寺(てら)です。', 'That', ['is', 'a', 'temple', 'built', 'about'], '100 years ago.'], ['わたしは かのじょが だれなのか 知(し)りません。', 'I', ["don't", 'know', 'who', 'she', 'is'], '.'],
+      ['ケンは その 知(し)らせを 聞(き)いて うれしかった。', 'Ken', ['was', 'happy', 'to', 'hear', 'the'], 'news.'], ['その 本(ほん)は 有名(ゆうめい)な 作家(さっか)に よって 書(か)かれた。', 'The book', ['was', 'written', 'by', 'a', 'famous'], 'writer.']];
+    add(J3, 'ならべかえ（中(ちゅう)3の 文法(ぶんぽう)）', N3.map(EIGO.ord),
+      `日本語(にほんご)の 文(ぶん)に 合(あ)うように、5つの ことばを ならべかえよう。高校入試(こうこうにゅうし)で よく 出(で)る 形(かたち)だよ。`,
+      `ならべた ときに ${big('2番目(ばんめ)')} と ${big('4番目(ばんめ)')} に くる ことばの 番号(ばんごう)を、じゅんに 入(い)れるよ。<br>まず 主語(しゅご)と 動詞(どうし)を 見(み)つけて、のこりを 後(うし)ろに つなげよう。`,
+      `中(ちゅう)3の 形(かたち)：have＋過去分詞(かこぶんし)（現在完了(げんざいかんりょう)）・名詞(めいし)＋〜ing／過去分詞(かこぶんし)・who／that（関係代名詞(かんけいだいめいし)）・want 人(ひと) to 〜・let 人(ひと) ＋動詞(どうし)・It is … for 人(ひと) to 〜<br>紙(かみ)に 書(か)いて ならべると まちがえにくいよ。`);
+  }
+
   // 学年の 順に ならべる（中1 → 中2 → 中3）
   W.units.sort((a, b) => UNITS[a].grade - UNITS[b].grade);
 })();
