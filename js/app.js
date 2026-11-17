@@ -18,6 +18,9 @@ function logout() { me = null; testBack = null; sessionStorage.removeItem('me');
 // テスト用の アカウント（me.test）：子どもの 画面と 先生の 画面を、ログインし直さずに 行き来できる（2026年11月15日 社長。試作品だけ）
 let testBack = null;
 function testToTeacher() { testBack = me.id; me = Store.get().users.find(u => u.role === 'teacher'); route(); }
+// 親戚の 子（みゆ・さわ）：その端末に 残っている 記録を、先生の画面の「子どもごと」で 見られるように する（2026年11月17日 社長。試作品だけ）
+const isGuest = u => !!u && (u.id === 'g1' || u.id === 'g2');
+function guestToTeacher() { const kid = me.id; testBack = kid; tKid = kid; tTab = 'child'; me = Store.get().users.find(u => u.role === 'teacher'); route(); }
 function testReturn() { me = Store.get().users.find(u => u.id === testBack) || null; testBack = null; route(); }
 const holiday = () => Store.get().settings.holiday;
 
@@ -88,7 +91,7 @@ function header(extra = '', ruto = false) {
   // 親戚の 子は 年長・年少なので、学年（1ねん）の かわりに label（ねんちょう など）を 出す。内容は 1年生
   return `<header><span>${me.ruby ? R(me.ruby) : esc(me.name)}（${me.label ? R(me.label) : Furigana.gradeLabel(me.grade, me.grade)}）</span>
     ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}${extra}
-    ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
+    ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : isGuest(me) ? `<button onclick="guestToTeacher()">${R('{先生|せんせい}の {画面|がめん}で {記録|きろく}を {見|み}る')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
 }
 function todayDots() {
   const n = Rules.rutoCountOn(Store.attemptsOf(me.id), Store.today()), cap = Rules.capFor(holiday());
@@ -1102,7 +1105,7 @@ function showTeacher(tab) {
     body = acctHTML(kids) + `
       <button onclick="if(confirm('架空のデータを作りなおします'))Store.reset().then(logout)">架空のデータを作りなおす</button>`;
   }
-  app().innerHTML = `<header><span>先生の画面（${esc(me.name)}）</span><span>${testBack ? '<button onclick="testReturn()">テスト用の 子どもの 画面へ</button>' : ''}<button onclick="logout()">ログアウト</button></span></header>
+  app().innerHTML = `<header><span>先生の画面（${esc(me.name)}）</span><span>${testBack ? `<button onclick="testReturn()">${isGuest(Store.get().users.find(u => u.id === testBack)) ? 'こどもの 画面へ もどる' : 'テスト用の 子どもの 画面へ'}</button>` : ''}<button onclick="logout()">ログアウト</button></span></header>
     <nav>${tabs.map(([k, n]) => `<button class="${k === tTab ? 'on' : ''}" onclick="showTeacher('${k}')">${n}</button>`).join('')}</nav><main class="wide">${body}</main>`;
   if (tTab === 'ml') { mlTeacherBind(); bindCharts(); }
   if ($('#hol')) $('#hol').onchange = e => { Store.get().settings.holiday = e.target.checked; Store.save(); };
