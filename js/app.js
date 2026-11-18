@@ -299,10 +299,10 @@ function unitStep(u, hist) {
 }
 const canOpen = (u, hist) => unitStep(u, hist) !== 'lock' || assignPending(me.id, hist).some(a => a.unit === u);
 
-// スマホ（指だけで さわる 小さい 画面）では、キーボードや 音が いる 科目を 出さない（2026年11月18日 社長）
-// パソコン（キーボード・ローマ字・ロボット）と 音楽。タブレット（短い 辺が 600px 以上）・パソコンでは 出す
+// スマホ・タブレット（指だけで さわる 画面）では、キーボードや 音が いる 科目を 出さない（2026年11月18日 社長）
+// パソコン（キーボード・ローマ字・ロボット）と 音楽。マウスの ある パソコンでは 出す
 const PC_ONLY = new Set(['x0', 'x2']);
-const isPhone = () => matchMedia('(pointer: coarse) and (hover: none)').matches && Math.min(screen.width, screen.height) < 600;
+const isPhone = () => matchMedia('(pointer: coarse) and (hover: none)').matches;
 const hideSubj = s => !!s && isPhone() && PC_ONLY.has(s.id);
 const hideUnit = u => { const U = UNITS[u]; if (!U) return false; const se = seriesById(U.series); return hideSubj(se && subjectOf(se)); };
 function recommendations(hist) {
