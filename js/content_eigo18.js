@@ -1,0 +1,11 @@
+// 英検2級の 単語 第11弾（2026年11月18日）。content_eigo9.js の あとに 読む（道具は EIGO_LV.V）。
+// 英検2級の めやす 約5000語に 近づけるため、content_eigo〜 に ない 語だけを 足した（重なりは 機械で 調べた）。語の えらび方・意味は Claude の 案（仮。先生が 確かめる）。
+(() => {
+  if (!window.EIGO_LV) return;
+  const { V, G2 } = EIGO_LV;
+  V(G2, '動詞(どうし)㊱（2級(きゅう)）', 'swap=交換(こうかん)する|sway=揺(ゆ)れる|symbolize=象徴(しょうちょう)する|sympathize=同情(どうじょう)する|synthesize=合成(ごうせい)する|tangle=もつれさせる|testify=証言(しょうげん)する|thaw=とける|thrust=押(お)しこむ|tickle=くすぐる|tilt=傾(かたむ)ける|toss=投(な)げる|trample=踏(ふ)みつける|transmit=送信(そうしん)する|tug=ぐいと 引(ひ)く|tumble=転(ころ)ぶ|underestimate=過小(かしょう) 評価(ひょうか)する|unfold=広(ひろ)げる|unpack=荷(に)を ほどく|unveil=公開(こうかい)する|uproot=根(ね)こそぎに する|validate=正(ただ)しいと 確認(かくにん)する|vend=売(う)る|vibrate=振動(しんどう)する|wag=（しっぽを）ふる');
+  V(G2, '名詞(めいし)(59)（2級(きゅう)）', 'resonance=反響(はんきょう)|respondent=回答者(かいとうしゃ)|restoration=修復(しゅうふく)|retailer=小売(こうり) 業者(ぎょうしゃ)|revision=改訂(かいてい)|riddle=なぞなぞ|ridge=尾根(おね)|rift=亀裂(きれつ)|rigor=厳(きび)しさ|riot=暴動(ぼうどう)|roommate=同居人(どうきょにん)|rubble=がれき|runway=滑走路(かっそうろ)|rust=さび|saddle=くら|scandal=不祥事(ふしょうじ)|scarcity=不足(ふそく)|scent=香(かお)り|scholar=学者(がくしゃ)|scrap=切(き)れ端(はし)');
+  V(G2, '名詞(めいし)(60)（2級(きゅう)）', 'screening=検診(けんしん)・上映(じょうえい)|script=台本(だいほん)|seafood=海産物(かいさんぶつ)|seasoning=調味料(ちょうみりょう)|secretary=秘書(ひしょ)|seedling=苗(なえ)|self-esteem=自尊心(じそんしん)|senator=上院(じょういん) 議員(ぎいん)|sentiment=感情(かんじょう)|servant=召使(めしつか)い|setback=つまずき|shipment=発送(はっそう)|shortcut=近道(ちかみち)|shortcoming=欠点(けってん)|shovel=シャベル|siege=包囲(ほうい)|simplicity=簡単(かんたん)さ|sincerity=誠実(せいじつ)さ|slogan=標語(ひょうご)|smoke=けむり');
+  V(G2, '名詞(めいし)(61)（2級(きゅう)）', 'sociology=社会学(しゃかいがく)|solitude=孤独(こどく)|sovereignty=主権(しゅけん)|spacecraft=宇宙船(うちゅうせん)|specimen=標本(ひょうほん)|spectacle=光景(こうけい)|spectrum=範囲(はんい)・スペクトル|sphere=球(きゅう)・領域(りょういき)|spokesperson=広報(こうほう) 担当(たんとう)|stability=安定(あんてい)|stairway=階段(かいだん)|stake=くい・利害(りがい)|stamina=持久力(じきゅうりょく)|stem=茎(くき)|stockholder=株主(かぶぬし)|stool=腰掛(こしか)け|strain=負担(ふたん)');
+  V(G2, '形容詞(けいようし)・副詞(ふくし)㊱（2級(きゅう)）', 'persistent=しつこい|personalized=個人(こじん)向(む)けの|persuasive=説得力(せっとくりょく)の ある|pharmaceutical=製薬(せいやく)の|picturesque=絵(え)の ように 美(うつく)しい|playful=ふざけた|pleasing=感(かん)じの よい|plentiful=豊富(ほうふ)な|poetic=詩的(してき)な|poisonous=有毒(ゆうどく)な|polished=洗練(せんれん)された|populous=人口(じんこう)の 多(おお)い|powerless=無力(むりょく)な|predictable=予測(よそく)できる|premature=早(はや)すぎる|prepared=準備(じゅんび)が できた|prevalent=広(ひろ)まって いる|priceless=非常(ひじょう)に 貴重(きちょう)な|probable=ありそうな');
+})();
