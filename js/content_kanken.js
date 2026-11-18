@@ -164,6 +164,7 @@
     if (KANKEN_UPPER.k4) upper('k4', KANKEN_UPPER.kanji4, KANKEN_UPPER.k4);
     if (KANKEN_UPPER.k3) upper('k3', KANKEN_UPPER.kanji3, KANKEN_UPPER.k3);
     if (KANKEN_UPPER.k2p) upper('k2p', KANKEN_UPPER.kanji2p, KANKEN_UPPER.k2p);   // 準2級（kanken_p2.js）
+    if (KANKEN_UPPER.k2) upper('k2', KANKEN_UPPER.kanji2, KANKEN_UPPER.k2);   // 2級（kanken_2.js）
   }
 
   // ---- 8級〜5級の部首・送り仮名・対義語など（画面で書かないので、えらぶ形と読みを打つ形・仮） ----
@@ -305,11 +306,19 @@
     kosei('k2p', 'k2p-18', 0.7, ['凹凸 慶弔 硬軟 美醜 繁閑 隠顕', '把握 抹消 剰余 謙譲 叙述 披露', '酷暑 窮地 銃声 漆器 傑作 暁光', '献血 遮光 殉職 撤兵 免疫 充電', '不肖 無償 不偏 不惑 未納 無窮']);
     gojiUnit('k2p', 'k2p-19', ['k2p-16', 'k2p-17'], 0.7);
   }
+  // 2級（2026年11月18日。kanken_2.js の 字を つかう 言葉・Claude の 案・仮）
+  if (k.series.find(s => s.id === 'k2') && typeof KANKEN_UPPER !== 'undefined' && KANKEN_UPPER.k2) {
+    okuri('k2', 'k2-11', '{送|おく}り{仮名|がな}①', 0.7, '萎|な|える 潰|つぶ|す 嗅|か|ぐ 蹴|け|る 羨|うらや|む 遡|さかのぼ|る 貪|むさぼ|る 嘲|あざけ|る 貼|は|る 拭|ふ|く 捉|とら|える 妬|ねた|む 罵|ののし|る 湧|わ|く 匂|にお|う');
+    okuri('k2', 'k2-12', '{送|おく}り{仮名|がな}②', 0.7, '籠|こ|もる 剝|は|がす 憧|あこが|れる 諦|あきら|める 溺|おぼ|れる 狙|ねら|う 腫|は|れる 塞|ふさ|ぐ 綻|ほころ|びる 痩|や|せる 蔑|さげす|む 爽|さわ|やか 僅|わず|か 煎|い|る 乞|こ|う');
+    pairs('k2', 'k2-13', '{対義語|たいぎご}', 0.7, '謙遜-傲慢 曖昧-明瞭 緻密-粗雑 斬新-陳腐 軽蔑-尊敬 貪欲-無欲 爽快-不快 覚醒-睡眠 進捗-停滞 秘匿-公開', '{反対|はんたい}の いみの ことば');
+    pairs('k2', 'k2-14', '{類義語|るいぎご}', 0.7, '曖昧-漠然 嫉妬-羨望 謙遜-謙虚 進捗-進展 完璧-完全 痕跡-形跡 稽古-練習 傲慢-横柄 緻密-精密 戦慄-恐怖', 'にた いみの ことば');
+    addRead('k2', 'k2-15', '{四字熟語|よじじゅくご}', 0.7, ['[[一目瞭然|いちもくりょうぜん]]の けっか。', '[[曖昧模糊|あいまいもこ]]とした はなし。', '[[傲岸不遜|ごうがんふそん]]な たいど。', '[[斬新奇抜|ざんしんきばつ]]な デザイン。', '[[錦衣玉食|きんいぎょくしょく]]の くらし。', '[[妖怪変化|ようかいへんげ]]の ものがたり。', '[[前虎後狼|ぜんここうろう]]の ピンチ。', '[[鶴髪童顔|かくはつどうがん]]の ろうじん。']);
+  }
 
   // ---- 画数・部首を、その級の全部の字に（kanji_info.js。ウィキペディアの常用漢字一覧から・仮） ----
   if (typeof KANJI_INFO !== 'undefined') {
     const LV = { k10: 0, k9: 1, k8: 2, k7: 3, k6: 4, k5: 5 };
-    const kanjiOf = sid => sid in LV ? [...KANJI_BY_GRADE[LV[sid]]] : [...KANKEN_UPPER[{ k4: 'kanji4', k3: 'kanji3', k2p: 'kanji2p' }[sid]]];
+    const kanjiOf = sid => sid in LV ? [...KANJI_BY_GRADE[LV[sid]]] : [...KANKEN_UPPER[{ k4: 'kanji4', k3: 'kanji3', k2p: 'kanji2p', k2: 'kanji2' }[sid]]];
     const chunks = (a, size) => { const n = Math.max(1, Math.round(a.length / size)); return Array.from({ length: n }, (_, i) => a.slice(Math.round(i * a.length / n), Math.round((i + 1) * a.length / n))); };
     const NUM = '①②③④⑤⑥⑦⑧⑨⑩';
     // 部首の見せ方（へん・かんむりの形も見せる）
@@ -326,7 +335,7 @@
     const HLEC = typeof KANJI_STROKES === 'undefined' ? [] : [
       `{漢字|かんじ}は {書|か}く {順番|じゅんばん}（{筆順|ひつじゅん}）が {決|き}まって いるよ。<br>${strokeSvg('右', undefined, true)} ${strokeSvg('左', undefined, true)}<br>「みぎ」と「ひだり」は 1{画目|かくめ}と 2{画目|かくめ}が ぎゃく。`,
       `{赤|あか}い {線|せん}は {何画目|なんかくめ}かな？<br>${strokeSvg('田', 2)}<br>こたえ：3（{数|かず}を テンキーで いれて Enter）`];
-    Object.entries({ k10: 0.8, k9: 0.8, k8: 0.8, k7: 0.7, k6: 0.7, k5: 0.7, k4: 0.7, k3: 0.7, k2p: 0.7 }).forEach(([sid, pass]) => {
+    Object.entries({ k10: 0.8, k9: 0.8, k8: 0.8, k7: 0.7, k6: 0.7, k5: 0.7, k4: 0.7, k3: 0.7, k2p: 0.7, ...(typeof KANKEN_UPPER !== 'undefined' && KANKEN_UPPER.k2 ? { k2: 0.7 } : {}) }).forEach(([sid, pass]) => {
       const ser = k.series.find(s => s.id === sid), ks = kanjiOf(sid).filter(c => KANJI_INFO[c]);
       // 画数：前からある「画数①②」の単元は、全部の字を分けたものに入れかえる
       const old = ser.units.filter(id => UNITS[id] && UNITS[id].col === BU && /画数/.test(UNITS[id].name));
