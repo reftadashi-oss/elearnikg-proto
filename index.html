@@ -334,85 +334,109 @@ main.center > button.primary { border-radius:var(--r); }
 .pickrow { justify-content:center; }
 .flag { display:inline-block; min-width:1.2em; padding:0 4px; border-radius:3px; background:var(--ng); color:#fff; font-weight:bold; text-align:center; font-size:.85em; }
 @media print { header { border-bottom:0; } }
+
+/* ===== 高の 問題を 直す（2026年11月19日） ===== */
+/* まだ 開いて いない 単元：うすく しすぎて 読めなかった → 字は 読める 濃さ、点線の わくと 🔒 で「まだ」と わかる */
+.unit.lock { opacity:1; color:#5f645b; background:transparent; }
+.unit.lock .nm, .unit.lock small { color:#5f645b; }
+.unit.done { opacity:1; color:var(--sub); background:#efece2; }
+small.prog, .road .more { color:var(--sub); }
+/* 講義の ふだ（きょう まなぶ こと・こたえかた）も まるい バッジを やめる */
+.lh, .lsec { border-radius:4px !important; }
+/* ふりがな：小さい 字の 上でも 10px より 小さく しない */
+body.kid rt { font-size:max(.55em, 10px); }
+body.kid small.prog { font-size:.85em; }
+/* 記録の コピー・読みこみ（先生と いっしょに つかう）：ホームの いちばん 下に 小さく */
+.xfer { margin:28px 0 8px; padding-top:10px; border-top:1.5px dashed var(--line); color:var(--sub); font-size:.85em; }
+/* PC の よこ長の 画面（たかさが ひくい）：問題を 少し 小さく して、答えの ボタンまで 1画面に 入れる */
+@media (min-width:601px) and (max-height:900px) {
+  main.center { padding-top:8px; }
+  main.center > .count { margin:0 0 4px; }
+  main.center > .q { font-size:clamp(1.4em, .9em + 1.6vh, 2.1em); padding:14px 20px; margin:6px auto 8px; }
+  main.center > .q img, main.center > .q svg { max-height:40vh; }
+  .pickrow { margin:6px 0; } .pickb { min-height:64px; }
+  .pad { padding:4px 6px; } .pad:not(.npad):not(.abc) button, .pad:not(.npad):not(.abc) span { height:max(30px, 4.6vh); margin:1px; }
+  main.center > .q svg.jmap { max-height:46vh !important; }
+}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <!-- 外から読みこむ部品はなし（全部このフォルダの中） -->
-<script src="js/kanji.js?v=310"></script>
-<script src="js/furigana.js?v=310"></script>
-<script src="js/kana.js?v=310"></script>
-<script src="js/kanken_words.js?v=310"></script>
-<script src="js/content.js?v=310"></script>
-<script src="js/content_math.js?v=310"></script>
-<script src="js/content_zukei.js?v=310"></script>
-<script src="js/kanken_more.js?v=310"></script>
-<script src="js/kanji_info.js?v=310"></script>
-<script src="js/kanken_p2.js?v=310"></script>
-<script src="js/kanken_2.js?v=310"></script>
-<script src="js/kanji_strokes.js?v=310"></script>
-<script src="js/content_kanken.js?v=310"></script>
-<script src="js/japan_map.js?v=310"></script>
-<script src="js/music_svg.js?v=310"></script>
-<script src="js/content_more.js?v=310"></script>
-<script src="js/content_more2.js?v=310"></script>
-<script src="js/content_chou.js?v=310"></script>
-<script src="js/tsume3_data.js?v=310"></script>
-<script src="js/tsume5_data.js?v=310"></script>
-<script src="js/tsume.js?v=310"></script>
-<script src="js/content_add.js?v=310"></script>
-<script src="js/content_math2.js?v=310"></script>
-<script src="js/content_rika.js?v=310"></script>
-<script src="js/content_rika2.js?v=310"></script>
-<script src="js/content_chu1.js?v=310"></script>
-<script src="js/content_chu2.js?v=310"></script>
-<script src="js/content_chu3.js?v=310"></script>
-<script src="js/content_yomu.js?v=310"></script>
-<script src="js/content_omoshiro.js?v=310"></script>
-<script src="js/content_bunpo.js?v=310"></script>
-<script src="js/content_eigo.js?v=310"></script>
-<script src="js/content_eigo2.js?v=310"></script>
-<script src="js/content_eigo3.js?v=310"></script>
-<script src="js/content_eigo4.js?v=310"></script>
-<script src="js/content_eigo5.js?v=310"></script>
-<script src="js/content_eigo6.js?v=310"></script>
-<script src="js/content_eigo7.js?v=310"></script>
-<script src="js/content_eigo8.js?v=310"></script>
-<script src="js/content_eigo9.js?v=310"></script>
-<script src="js/content_eigo10.js?v=310"></script>
-<script src="js/content_eigo11.js?v=310"></script>
-<script src="js/content_eigo12.js?v=310"></script>
-<script src="js/content_eigo13.js?v=310"></script>
-<script src="js/content_eigo14.js?v=310"></script>
-<script src="js/content_eigo15.js?v=310"></script>
-<script src="js/content_eigo16.js?v=310"></script>
-<script src="js/content_eigo17.js?v=310"></script>
-<script src="js/content_eigo18.js?v=310"></script>
-<script src="js/content_bunpo2.js?v=310"></script>
-<script src="js/content_kokugo3.js?v=310"></script>
-<script src="js/content_kana.js?v=310"></script>
-<script src="js/content_kazu.js?v=310"></script>
-<script src="js/content_card7.js?v=310"></script>
-<script src="js/content_puzzle7.js?v=310"></script>
-<script src="js/content_rika3.js?v=310"></script>
-<script src="js/content_rika4.js?v=310"></script>
-<script src="js/content_rika5.js?v=310"></script>
-<script src="js/content_shakai1.js?v=310"></script>
-<script src="js/content_shakai2.js?v=310"></script>
-<script src="js/content_shakai3.js?v=310"></script>
-<script src="js/content_hoju_shakai.js?v=310"></script>
-<script src="js/content_hoju_rika.js?v=310"></script>
-<script src="js/content_sho.js?v=310"></script>
-<script src="js/content_sho2.js?v=310"></script>
-<script src="js/lecture_more.js?v=310"></script>
-<script src="js/steps.js?v=310"></script>
-<script src="js/review.js?v=310"></script>
-<script src="js/rules.js?v=310"></script>
-<script src="js/store.js?v=310"></script>
-<script src="js/app.js?v=310"></script>
-<script src="js/moneylab.js?v=310"></script>
-<script src="js/ml_app.js?v=310"></script>
-<script src="js/typing.js?v=310"></script>
-<script src="js/transfer.js?v=310"></script>
+<script src="js/kanji.js?v=311"></script>
+<script src="js/furigana.js?v=311"></script>
+<script src="js/kana.js?v=311"></script>
+<script src="js/kanken_words.js?v=311"></script>
+<script src="js/content.js?v=311"></script>
+<script src="js/content_math.js?v=311"></script>
+<script src="js/content_zukei.js?v=311"></script>
+<script src="js/kanken_more.js?v=311"></script>
+<script src="js/kanji_info.js?v=311"></script>
+<script src="js/kanken_p2.js?v=311"></script>
+<script src="js/kanken_2.js?v=311"></script>
+<script src="js/kanji_strokes.js?v=311"></script>
+<script src="js/content_kanken.js?v=311"></script>
+<script src="js/japan_map.js?v=311"></script>
+<script src="js/music_svg.js?v=311"></script>
+<script src="js/content_more.js?v=311"></script>
+<script src="js/content_more2.js?v=311"></script>
+<script src="js/content_chou.js?v=311"></script>
+<script src="js/tsume3_data.js?v=311"></script>
+<script src="js/tsume5_data.js?v=311"></script>
+<script src="js/tsume.js?v=311"></script>
+<script src="js/content_add.js?v=311"></script>
+<script src="js/content_math2.js?v=311"></script>
+<script src="js/content_rika.js?v=311"></script>
+<script src="js/content_rika2.js?v=311"></script>
+<script src="js/content_chu1.js?v=311"></script>
+<script src="js/content_chu2.js?v=311"></script>
+<script src="js/content_chu3.js?v=311"></script>
+<script src="js/content_yomu.js?v=311"></script>
+<script src="js/content_omoshiro.js?v=311"></script>
+<script src="js/content_bunpo.js?v=311"></script>
+<script src="js/content_eigo.js?v=311"></script>
+<script src="js/content_eigo2.js?v=311"></script>
+<script src="js/content_eigo3.js?v=311"></script>
+<script src="js/content_eigo4.js?v=311"></script>
+<script src="js/content_eigo5.js?v=311"></script>
+<script src="js/content_eigo6.js?v=311"></script>
+<script src="js/content_eigo7.js?v=311"></script>
+<script src="js/content_eigo8.js?v=311"></script>
+<script src="js/content_eigo9.js?v=311"></script>
+<script src="js/content_eigo10.js?v=311"></script>
+<script src="js/content_eigo11.js?v=311"></script>
+<script src="js/content_eigo12.js?v=311"></script>
+<script src="js/content_eigo13.js?v=311"></script>
+<script src="js/content_eigo14.js?v=311"></script>
+<script src="js/content_eigo15.js?v=311"></script>
+<script src="js/content_eigo16.js?v=311"></script>
+<script src="js/content_eigo17.js?v=311"></script>
+<script src="js/content_eigo18.js?v=311"></script>
+<script src="js/content_bunpo2.js?v=311"></script>
+<script src="js/content_kokugo3.js?v=311"></script>
+<script src="js/content_kana.js?v=311"></script>
+<script src="js/content_kazu.js?v=311"></script>
+<script src="js/content_card7.js?v=311"></script>
+<script src="js/content_puzzle7.js?v=311"></script>
+<script src="js/content_rika3.js?v=311"></script>
+<script src="js/content_rika4.js?v=311"></script>
+<script src="js/content_rika5.js?v=311"></script>
+<script src="js/content_shakai1.js?v=311"></script>
+<script src="js/content_shakai2.js?v=311"></script>
+<script src="js/content_shakai3.js?v=311"></script>
+<script src="js/content_hoju_shakai.js?v=311"></script>
+<script src="js/content_hoju_rika.js?v=311"></script>
+<script src="js/content_sho.js?v=311"></script>
+<script src="js/content_sho2.js?v=311"></script>
+<script src="js/lecture_more.js?v=311"></script>
+<script src="js/steps.js?v=311"></script>
+<script src="js/review.js?v=311"></script>
+<script src="js/rules.js?v=311"></script>
+<script src="js/store.js?v=311"></script>
+<script src="js/app.js?v=311"></script>
+<script src="js/moneylab.js?v=311"></script>
+<script src="js/ml_app.js?v=311"></script>
+<script src="js/typing.js?v=311"></script>
+<script src="js/transfer.js?v=311"></script>
 </body>
 </html>

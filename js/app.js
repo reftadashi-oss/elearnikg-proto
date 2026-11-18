@@ -334,7 +334,7 @@ function showTop() {
   };
   const hw = [...new Set(assignPending(me.id, hist).map(a => a.unit))].filter(u => !hideUnit(u));
   const rec = recommendations(hist).filter(r => !hw.includes(r.unit));
-  app().innerHTML = header(`${isPhone() ? '' : `<button onclick="Typing.menu()">${R('タイピング')}</button>`}<button onclick="showAccount()">${R('{口座|こうざ}')}</button><button onclick="Transfer.showCopy(me.id)">${R('{記録|きろく}を コピー')}</button><button onclick="Transfer.showLoad(() => showTop())">${R('{記録|きろく}を {読|よ}みこむ')}</button>`) + `
+  app().innerHTML = header(`${isPhone() ? '' : `<button onclick="Typing.menu()">${R('タイピング')}</button>`}<button onclick="showAccount()">${R('{口座|こうざ}')}</button>`) + `
   <main>
     ${todayDots()}
     ${hw.length ? `<h2>${R('{先生|せんせい}からの{宿題|しゅくだい}')}</h2><div class="units rec-sub">${hw.map(u => unitBtn(u, '{宿題|しゅくだい}')).join('')}</div>` : ''}
@@ -347,6 +347,7 @@ function showTop() {
     ${SUBJECTS.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s)).map(s => roadSubject(s, hist, unitBtn)).join('')}
     <h2>${R('オプション')} <small class="prog">${R('すきな ときに')}</small></h2>
     ${SUBJECTS.filter(s => OPTIONAL.has(s.id) && !hideSubj(s)).map(s => roadSubject(s, hist, unitBtn)).join('')}
+    <p class="xfer">${R('{先生|せんせい}と いっしょに つかう ボタン')}：<button class="mini" onclick="Transfer.showCopy(me.id)">${R('{記録|きろく}を コピー')}</button> <button class="mini" onclick="Transfer.showLoad(() => showTop())">${R('{記録|きろく}を {読|よ}みこむ')}</button></p>
   </main>`;
 }
 // 先生の画面（子どもごと）：シリーズごとに「いまの単元」を えらびなおす。前に もどす＝差し戻し、後ろ＝先に進める
@@ -650,6 +651,8 @@ function showLecture(must) {
   else if (p === 0) tag = '<span class="lh st">きょう まなぶ こと</span>';
   else if (p === L.length - 1 && HOWTO.test(body)) tag = '<span class="lh how">こたえかた</span>';
   else tag = '<span class="lh">せつめい</span>';
+  // えらぶ ボタンで こたえる 単元は、「こたえの 番号を テンキーで いれよう」を「こたえの ボタンを おそう」に する（2026年11月19日）
+  if (cur.qs && cur.qs.some(q => q.pick || autoPick(q))) body = body.replace(/(こたえ|\{答\|こた\}え|答え)の\s*(\{番号\|ばんごう\}|番号|ばんごう)を\s*テンキーで\s*(いれよう|\{入\|い\}れよう|入れよう)/g, '$1の ボタンを おそう');
   body = body.replace(/class="lh( [^"]*)?"/g, (_, c) => `class="lsec${c || ''}"`);   // ページの とちゅうの ふだは 見出しに
   const last = p === L.length - 1;
   // 文が みじかい ページは、大きな 字で まん中に（ページ ぜんたいを つかう）
@@ -719,8 +722,9 @@ function questionHTML(q) {
   // えを おして えらぶ 問題（年長・年少の かず など）：ばんごうを 入れさせない（ばんごうと こたえの かずが まざるため。2026年11月17日）
   // 「1 ミ　2 ソ　3 ファ」のように ばんごうで えらぶ 問題も、えらぶ ものを そのまま ボタンに する（数字の ボタンは 出さない。2026年11月17日 社長）
   // キーボードで 1・2・3 を おして Enter でも こたえられる（かくした 箱に 入る）
-  const ap = !q.pick && autoPick(q);
-  if (ap) { q.pick = ap.pick; q.pickHTML = true; }
+  // 2回目に 描く とき（なおす・描きなおし・同じ 問題が 2回）も、番号の 列を けす（2026年11月19日）
+  const ap = (!q.pick || q.autoPicked) && autoPick(q);
+  if (ap) { q.pick = ap.pick; q.pickHTML = true; q.autoPicked = true; }
   if (q.pick) return `${play}<div class="q">${ap ? ap.stem : R(q.text)} <span style="display:none">${boxes}</span></div>
     <div class="pickrow">${q.pick.map((h, i) => `<button class="pickb" onclick="pickAns(${i + 1})">${q.pickHTML ? h : R(h)}</button>`).join('')}</div>
     <button class="primary" id="ok" style="display:none"></button><p class="msg" id="qmsg"></p>`;
@@ -853,7 +857,7 @@ function grade() {
   app().innerHTML = unitHeader() + `<main>
     <h2>${R('こたえあわせ')}：${r.score} / ${r.total}</h2>
     <table class="check"><tr><th></th><th>${R('{問題|もんだい}')}</th><th style="white-space:nowrap">${R('あなたの {答|こた}え')}</th><th></th>${showAns ? `<th style="white-space:nowrap">${R('{正|ただ}しい {答|こた}え')}</th>` : ''}</tr>
-    ${cur.answers.map((a, k) => `<tr><td>${k + 1}</td><td>${R(noBtn(a.text))}</td><td>${fmt(a.first, a)}</td><td class="${a.ok ? 'ok' : 'ng'}">${a.ok ? '○' : '×'}</td>${showAns ? `<td class="hint"><b>${a.ok ? '' : fmt(a.correct.map(String), a)}</b></td>` : ''}</tr>`).join('')}</table>
+    ${cur.answers.map((a, k) => `<tr><td>${k + 1}</td><td>${(ap => ap ? ap.stem : R(noBtn(a.text)))(autoPick({ text: a.text, boxes: a.boxes, answer: a.correct }))}</td><td>${fmt(a.first, a)}</td><td class="${a.ok ? 'ok' : 'ng'}">${a.ok ? '○' : '×'}</td>${showAns ? `<td class="hint"><b>${a.ok ? '' : fmt(a.correct.map(String), a)}</b></td>` : ''}</tr>`).join('')}</table>
     <div class="center">${cur.unit.kind === 'fin' ? (r.passed ? '' : `<p>${R('まちがえた {問題|もんだい}を なおそう')}</p>`) : ''}${needFix ? `<button class="primary big" onclick="startFix()">${R('まちがえた{問題|もんだい}を なおす')}</button>`
       : `<button class="primary big" onclick="showResult()">${R('つぎへ')}</button>`}</div></main>`;
 }
