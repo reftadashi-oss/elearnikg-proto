@@ -21,7 +21,7 @@
     UNITS[id] = { id, subject: 'kanken', series, name, col: '読み', pass, make: () => pickSentences(all), lecture: [READ, ex] };
   };
   const strokes = (id, series, name, pass, s) => {
-    const items = s.trim().split(/\s+/).map(x => [x[0], Number(x.slice(1))]);
+    const items = s.trim().split(/\s+/).map(x => { const c = [...x][0]; return [c, Number(x.slice(c.length))]; });   // 𠮟 のように 2文字分の 字が あるので [...x] で 分ける（2026年11月18日）
     const make = () => {
       for (let t = 0; t < 60; t++) {
         const a = shuffle(items).slice(0, 10), c = {};

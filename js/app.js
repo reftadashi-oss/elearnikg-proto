@@ -313,7 +313,7 @@ function recommendations(hist) {
   const subjOrder = me.grade <= 3 ? [...SUBJECTS].sort((a, b) => (b.id === 'math') - (a.id === 'math')) : SUBJECTS;
   if (me.label) subjOrder.sort((a, b) => (b.id === 'x7') - (a.id === 'x7'));   // 年長・年少の 子は ひらがな・カタカナを いちばん 先に おすすめ
   // オプションの科目（詰将棋）は おすすめに 出さない。やりたい子が「すすみぐあい」から えらぶ
-  const series = subjOrder.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s)).flatMap(s => s.series).filter(se => se.units.length);
+  const series = subjOrder.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s) && !(s.id === 'x7' && !me.label && me.grade >= 2)).flatMap(s => s.series).filter(se => se.units.length);   // 年長むけの ひらがな・かず（x7）は、2年生より 上の 子には おすすめに 出さない（6年に「かずを かぞえよう」が 出て いた。2026年11月18日）
   const real = se => se.units.filter(u => !UNITS[u].extra);
   series.forEach(se => { const id = `weak-${se.id}`; if (Review.ready(se.id, hist) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: '{苦手|にがて}' }); });
   Rules.weakUnits(hist).filter(w => !UNITS[w.unit].extra && !hideUnit(w.unit) && !OPTIONAL.has(subjectOf(seriesById(UNITS[w.unit].series))?.id) &&!Rules.unitState(hist, w.unit).finished).forEach(w => rec.push({ unit: w.unit, why: '{苦手|にがて}' }));
