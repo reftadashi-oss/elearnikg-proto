@@ -941,7 +941,7 @@ function hwConfirm() {
 
 // 漢検の状況：実施率（来た日のうち、漢検の単元を1回でもやった日の割合）と、合格点（10〜8級は8割、7〜3級は7割）をこえた割合
 // 無効の回は数えない。練習の回はふくめる（力を見るため）
-const KK = { lowDo: 0.5, lowPass: 0.7 };   // ⚠️をつける目安（仮）：実施率50%未満、合格率70%未満
+const KK = { lowDo: 0.5, lowPass: 0.7 };   // ！の 印を つける目安（仮）：実施率50%未満、合格率70%未満
 const isKanken = a => UNITS[a.unit] && UNITS[a.unit].subject === 'kanken';
 function kankenStats(c, from, to) {
   const days = Store.get().attendance[c.id].filter(d => d >= from && d <= to);
@@ -960,10 +960,10 @@ function kankenBlock(kids, today) {
     <table class="list"><tr><th></th>${cols.map(([n]) => `<th>${n}</th>`).join('')}</tr>
       <tr><td><b>実施率</b><br><small class="note">来た日のうち漢検をやった日</small></td>${cols.map(([, x]) => `<td><b>${p(x.did, x.days)}</b><br><small class="note">${x.did}/${x.days}日</small></td>`).join('')}</tr>
       <tr><td><b>合格点をこえた割合</b><br><small class="note">10〜8級は8割、7〜3級は7割</small></td>${cols.map(([, x]) => `<td><b>${p(x.ok, x.n)}</b><br><small class="note">${x.ok}/${x.n}回</small></td>`).join('')}</tr></table>
-    <details class="detail"><summary>子どもごと（今月）${rows.some(([, x]) => flag(x)) ? '　⚠️ あり' : ''}</summary>
-      <p class="note">⚠️ は、実施率${KK.lowDo * 100}%未満か、合格点をこえた割合が${KK.lowPass * 100}%未満の子（目安は仮）。無効の回は数えない。</p>
+    <details class="detail"><summary>子どもごと（今月）${rows.some(([, x]) => flag(x)) ? '　<span class="flag">！</span> あり' : ''}</summary>
+      <p class="note"><span class="flag">！</span> は、実施率${KK.lowDo * 100}%未満か、合格点をこえた割合が${KK.lowPass * 100}%未満の子（目安は仮）。無効の回は数えない。</p>
       <table class="list"><tr><th>子ども</th><th>実施率</th><th>漢検の回数</th><th>合格点をこえた</th><th>最近の回</th></tr>
-      ${rows.map(([c, x]) => `<tr><td>${flag(x) ? '⚠️ ' : ''}${esc(c.name)}（${c.grade}年）</td><td>${p(x.did, x.days)}（${x.did}/${x.days}日）</td><td>${x.n}回</td><td>${p(x.ok, x.n)}（${x.ok}/${x.n}回）</td>
+      ${rows.map(([c, x]) => `<tr><td>${flag(x) ? '<span class="flag">！</span> ' : ''}${esc(c.name)}（${c.grade}年）</td><td>${p(x.did, x.days)}（${x.did}/${x.days}日）</td><td>${x.n}回</td><td>${p(x.ok, x.n)}（${x.ok}/${x.n}回）</td>
         <td>${x.last ? `${R(UNITS[x.last.unit].name)} ${x.last.score}/${x.last.total}点 ${x.last.passed ? '○' : '×'}` : '-'}</td></tr>`).join('') || '<tr><td colspan="5">ありません</td></tr>'}</table></details></div>`;
 }
 function todaySummary(kids, today) {
@@ -1019,14 +1019,14 @@ function todaySummary(kids, today) {
       finished.length ? `単元おしまい：${finished.join('、')}` : '',
       passedKids.length ? `合格した子：${names(passedKids)}` : '',
     ])}
-    ${sect('⚠️ 気をつけること', [
+    ${sect('気をつけること', [
       invalid.length ? `<span class="warn">無効の回</span>：${invalid.map(a => `${esc(a.c.name)}（${esc(a.invalid)}）`).join('、')}` : '',
       stuck.length ? `<span class="warn">つまずき</span>（同じ単元で2回続けて届かない）：${names(stuck)}` : '',
       call.length ? `<span class="warn">声かけリスト</span>（来た日が3回続けて0回。1回でもやれば自動で消える）：${names(call)}` : '',
       hwNg.length ? `<span class="warn">宿題ができていない</span>：${names(hwNg)}` : '',
       zero.length ? `まだEラーニングを1回もやっていない（声かけは強制しない）：${names(zero)}` : '',
     ])}
-    ${sect('🎁 物品の交換（わたす もの）', [
+    ${sect('物品の交換（わたす もの）', [
       exToday.length ? `<span class="warn">今日の交換 ${exToday.length}件</span>：${exToday.map(exLine).join('、')}` : '今日の交換：0件',
       exWait.length ? `<span class="warn">まだ渡していない</span>（受け取り待ち）${exWait.length}件：${exWait.map(exLine).join('、')}` : '',
       exOrder.length ? `<span class="warn">発注がまだ</span>（注文受付）${exOrder.length}件：${exOrder.map(exLine).join('、')}` : '',
@@ -1119,10 +1119,10 @@ function showTeacher(tab) {
       h.filter(a => a.invalid && a.day >= since).forEach(a => rows.push([c, a.day, UNITS[a.unit].name, a.invalid, [a]]));
       Object.keys(UNITS).forEach(u => { const st = Rules.unitState(h, u); if (st.failStreak >= 2) rows.push([c, st.last.day, UNITS[u].name, `同じ単元で${st.failStreak}回続けて合格ラインに届かない（つまずき）`, h.filter(a => a.unit === u && !a.invalid).slice(-st.failStreak)]); });
     });
-    body = `<h3>⚠️ 注意（最近14日）</h3>
+    body = `<h3>注意（最近14日）</h3>
       <p class="note">罰ではなく、声をかけるために使う。子どもの画面には出さない。「中身を見る」で、その回の10問（最初の答え・正しい答え・かかった時間）が見られます。</p>
       <table class="list"><tr><th>子ども</th><th>日</th><th>単元</th><th>内容</th></tr>${rows.map(([c, d, u, t, as]) => `<tr><td>${esc(c.name)}</td><td>${d.replace(/-/g, '/')}</td><td>${R(u)}</td>
-        <td>⚠️ ${esc(t)}</td></tr>
+        <td><span class="flag">！</span> ${esc(t)}</td></tr>
         <tr class="drow"><td colspan="4"><details class="detail"><summary>中身を見る</summary>${as.map((a, i) => attemptDetail(a, as.length > 1 ? `${i + 1}回目` : '')).join('')}</details></td></tr>`).join('') || '<tr><td colspan="4">ありません</td></tr>'}</table>
       <h3>苦手</h3>
       <p class="note">決まり：単元ごとに、最近20問の最初の答えの正答率が80%未満。「宿題にする」を押すと、その子の最初の画面に「先生からの宿題」として出ます。1回やると「やった」になります（仮）。</p>

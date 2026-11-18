@@ -279,85 +279,140 @@ main.center > h2 { font-size:2em; margin:20px 0 6px; color:var(--main); }
 @media print { header { position:static; box-shadow:none; background:#2f6f4f; } details, table.list, .tile, .summary { box-shadow:none; } body { background-image:none; } }
 @media (max-width:600px) { .col { grid-template-columns:1fr; } .col .cn { grid-row:auto; } .unit { min-width:100%; } }
 @media print { header button, nav, select, .note { display:none; } body { background:#fff; font-size:12px; } details { display:block; } details > summary { display:none; } details[open], details { }  }
+
+/* ===== 見た目の 作りなおし（2026年11月19日）：「よくある AI の 見た目」を やめる =====
+   ・グラデーション、ふわっとした 影、まるい バッジ（999px）を やめる。
+   ・教室の ノートと 掲示物の かんじ：紙の 色の 背景、はっきりした 線、角は 少しだけ まるく。
+   ・押せる ものは「下に 厚みの ある ボタン」（押すと しずむ）。押せない ものは 平ら。
+   ・問題と 講義の 字は 教科書体（入って いる パソコンだけ。ない ときは BIZ UDP ゴシック）。 */
+:root { --ink:#22281f; --sub:#5b6458; --line:#d6d0bf; --bg:#f6f3ea; --card:#fffdf8; --main:#2f6f4f; --maind:#1f4f38; --main2:#e4eee2; --accent:#e8b23a; --r:8px; --shadow:none; --shadow2:none; }
+body { background:var(--bg); background-image:none; color:var(--ink); }
+body.kid .q, body.kid .lecture .pc, body.kid .pickb { font-family:"UD デジタル 教科書体 NK-R","UD Digi Kyokasho NK-R","UD デジタル 教科書体 N-R","BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif; }
+header { background:var(--main); box-shadow:none; border-bottom:4px solid var(--maind); }
+header button { background:transparent; border:1.5px solid rgba(255,255,255,.75); border-radius:6px; }
+header button:hover { background:#fff; color:var(--maind); }
+header .ruto { background:rgba(0,0,0,.18); border-radius:6px; }
+button { border-radius:var(--r); border:1.5px solid var(--line); border-bottom-width:3px; box-shadow:none; background:var(--card); transition:transform .06s, border-color .12s, background .12s; }
+button:hover { border-color:var(--main); box-shadow:none; }
+button:active:not(:disabled) { transform:translateY(2px); border-bottom-width:1.5px; margin-bottom:1.5px; }
+button.primary, button.primary:hover { background:var(--main); color:#fff; border-color:var(--maind); border-bottom-width:4px; box-shadow:none; }
+button.primary:hover { background:#357c59; }
+button:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+input, select { border:1.5px solid var(--line); border-radius:6px; background:#fff; }
+input:focus, select:focus { border-color:var(--main); box-shadow:0 0 0 3px var(--main2); }
+.card, .summary, .tchart, .tile, details, table.list, .pad, .lecture .page, main.center > .q, .dots, main.center > .count, .gpop, #sibList { box-shadow:none !important; border-radius:var(--r); }
+.card, .tile, .tchart, details, main.center > .q, .lecture .page { background:var(--card); border:1.5px solid var(--line); }
+.summary { background:var(--card); border:1.5px solid var(--line); border-left:6px solid var(--main); }
+.login { border:1.5px solid var(--line); border-top:6px solid var(--main); border-radius:var(--r); background:var(--card); }
+main:not(.center):not(.lecture) > h2::before { border-radius:0; width:5px; }
+details > summary::before { border-radius:4px; }
+.series h3 { border-bottom:1.5px solid var(--line); }
+.unit { border-radius:var(--r); border:1.5px solid var(--line); border-bottom-width:3px; background:var(--card); box-shadow:none; }
+.unit:hover { transform:none; box-shadow:none; border-color:var(--main); }
+.unit small { border-radius:4px; background:var(--main2); color:var(--maind); }
+.unit.now { border:2px solid var(--main); border-bottom-width:4px; background:#fff; box-shadow:none; }
+.unit.now small { background:var(--main); color:#fff; }
+.unit.lock { border-style:dashed; border-bottom-width:1.5px; background:transparent; }
+.rec-main .unit { border:2px solid var(--main); border-left:10px solid var(--accent); border-bottom-width:4px; background:#fff; box-shadow:none; }
+.donebox > summary { border-radius:var(--r); background:var(--main2); }
+.dots, main.center > .count { border:1.5px solid var(--line); border-radius:6px; background:var(--card); }
+nav { background:var(--card); border-bottom:1.5px solid var(--line); box-shadow:none; }
+nav button, .seg button { border-radius:6px; border-bottom-width:1.5px; }
+nav button.on, nav button.on:hover { background:var(--main); color:#fff; border-color:var(--maind); }
+.pcnt { border-radius:4px; }
+th { background:#eee9dc; color:var(--ink); }
+table.list { border:1.5px solid var(--line); }
+.pickb { border:2px solid var(--line); border-bottom-width:5px; border-radius:var(--r); background:#fff; }
+.pickb:hover, .pickb:focus { border-color:var(--main); background:#fff; }
+.pickb:active { transform:translateY(3px); border-bottom-width:2px; margin-bottom:3px; }
+.pad { background:#eee9dc; border:1.5px solid var(--line); } .pad button { border-radius:6px; }
+.q .ans { border:2px solid var(--line); border-radius:6px; background:#fff; }
+.q .ans.active { border-color:var(--main); box-shadow:0 0 0 3px var(--main2); }
+main.center > button.primary { border-radius:var(--r); }
+.lecture .page { border-top:6px solid var(--main); }
+.planbar { border-radius:var(--r); } .kbd { border-radius:var(--r); }
+.pickrow { justify-content:center; }
+.flag { display:inline-block; min-width:1.2em; padding:0 4px; border-radius:3px; background:var(--ng); color:#fff; font-weight:bold; text-align:center; font-size:.85em; }
+@media print { header { border-bottom:0; } }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <!-- 外から読みこむ部品はなし（全部このフォルダの中） -->
-<script src="js/kanji.js?v=309"></script>
-<script src="js/furigana.js?v=309"></script>
-<script src="js/kana.js?v=309"></script>
-<script src="js/kanken_words.js?v=309"></script>
-<script src="js/content.js?v=309"></script>
-<script src="js/content_math.js?v=309"></script>
-<script src="js/content_zukei.js?v=309"></script>
-<script src="js/kanken_more.js?v=309"></script>
-<script src="js/kanji_info.js?v=309"></script>
-<script src="js/kanken_p2.js?v=309"></script>
-<script src="js/kanken_2.js?v=309"></script>
-<script src="js/kanji_strokes.js?v=309"></script>
-<script src="js/content_kanken.js?v=309"></script>
-<script src="js/japan_map.js?v=309"></script>
-<script src="js/music_svg.js?v=309"></script>
-<script src="js/content_more.js?v=309"></script>
-<script src="js/content_more2.js?v=309"></script>
-<script src="js/content_chou.js?v=309"></script>
-<script src="js/tsume3_data.js?v=309"></script>
-<script src="js/tsume5_data.js?v=309"></script>
-<script src="js/tsume.js?v=309"></script>
-<script src="js/content_add.js?v=309"></script>
-<script src="js/content_math2.js?v=309"></script>
-<script src="js/content_rika.js?v=309"></script>
-<script src="js/content_rika2.js?v=309"></script>
-<script src="js/content_chu1.js?v=309"></script>
-<script src="js/content_chu2.js?v=309"></script>
-<script src="js/content_chu3.js?v=309"></script>
-<script src="js/content_yomu.js?v=309"></script>
-<script src="js/content_omoshiro.js?v=309"></script>
-<script src="js/content_bunpo.js?v=309"></script>
-<script src="js/content_eigo.js?v=309"></script>
-<script src="js/content_eigo2.js?v=309"></script>
-<script src="js/content_eigo3.js?v=309"></script>
-<script src="js/content_eigo4.js?v=309"></script>
-<script src="js/content_eigo5.js?v=309"></script>
-<script src="js/content_eigo6.js?v=309"></script>
-<script src="js/content_eigo7.js?v=309"></script>
-<script src="js/content_eigo8.js?v=309"></script>
-<script src="js/content_eigo9.js?v=309"></script>
-<script src="js/content_eigo10.js?v=309"></script>
-<script src="js/content_eigo11.js?v=309"></script>
-<script src="js/content_eigo12.js?v=309"></script>
-<script src="js/content_eigo13.js?v=309"></script>
-<script src="js/content_eigo14.js?v=309"></script>
-<script src="js/content_eigo15.js?v=309"></script>
-<script src="js/content_eigo16.js?v=309"></script>
-<script src="js/content_eigo17.js?v=309"></script>
-<script src="js/content_eigo18.js?v=309"></script>
-<script src="js/content_bunpo2.js?v=309"></script>
-<script src="js/content_kokugo3.js?v=309"></script>
-<script src="js/content_kana.js?v=309"></script>
-<script src="js/content_kazu.js?v=309"></script>
-<script src="js/content_card7.js?v=309"></script>
-<script src="js/content_puzzle7.js?v=309"></script>
-<script src="js/content_rika3.js?v=309"></script>
-<script src="js/content_rika4.js?v=309"></script>
-<script src="js/content_rika5.js?v=309"></script>
-<script src="js/content_shakai1.js?v=309"></script>
-<script src="js/content_shakai2.js?v=309"></script>
-<script src="js/content_shakai3.js?v=309"></script>
-<script src="js/content_hoju_shakai.js?v=309"></script>
-<script src="js/content_hoju_rika.js?v=309"></script>
-<script src="js/content_sho.js?v=309"></script>
-<script src="js/content_sho2.js?v=309"></script>
-<script src="js/lecture_more.js?v=309"></script>
-<script src="js/steps.js?v=309"></script>
-<script src="js/review.js?v=309"></script>
-<script src="js/rules.js?v=309"></script>
-<script src="js/store.js?v=309"></script>
-<script src="js/app.js?v=309"></script>
-<script src="js/moneylab.js?v=309"></script>
-<script src="js/ml_app.js?v=309"></script>
-<script src="js/typing.js?v=309"></script>
-<script src="js/transfer.js?v=309"></script>
+<script src="js/kanji.js?v=310"></script>
+<script src="js/furigana.js?v=310"></script>
+<script src="js/kana.js?v=310"></script>
+<script src="js/kanken_words.js?v=310"></script>
+<script src="js/content.js?v=310"></script>
+<script src="js/content_math.js?v=310"></script>
+<script src="js/content_zukei.js?v=310"></script>
+<script src="js/kanken_more.js?v=310"></script>
+<script src="js/kanji_info.js?v=310"></script>
+<script src="js/kanken_p2.js?v=310"></script>
+<script src="js/kanken_2.js?v=310"></script>
+<script src="js/kanji_strokes.js?v=310"></script>
+<script src="js/content_kanken.js?v=310"></script>
+<script src="js/japan_map.js?v=310"></script>
+<script src="js/music_svg.js?v=310"></script>
+<script src="js/content_more.js?v=310"></script>
+<script src="js/content_more2.js?v=310"></script>
+<script src="js/content_chou.js?v=310"></script>
+<script src="js/tsume3_data.js?v=310"></script>
+<script src="js/tsume5_data.js?v=310"></script>
+<script src="js/tsume.js?v=310"></script>
+<script src="js/content_add.js?v=310"></script>
+<script src="js/content_math2.js?v=310"></script>
+<script src="js/content_rika.js?v=310"></script>
+<script src="js/content_rika2.js?v=310"></script>
+<script src="js/content_chu1.js?v=310"></script>
+<script src="js/content_chu2.js?v=310"></script>
+<script src="js/content_chu3.js?v=310"></script>
+<script src="js/content_yomu.js?v=310"></script>
+<script src="js/content_omoshiro.js?v=310"></script>
+<script src="js/content_bunpo.js?v=310"></script>
+<script src="js/content_eigo.js?v=310"></script>
+<script src="js/content_eigo2.js?v=310"></script>
+<script src="js/content_eigo3.js?v=310"></script>
+<script src="js/content_eigo4.js?v=310"></script>
+<script src="js/content_eigo5.js?v=310"></script>
+<script src="js/content_eigo6.js?v=310"></script>
+<script src="js/content_eigo7.js?v=310"></script>
+<script src="js/content_eigo8.js?v=310"></script>
+<script src="js/content_eigo9.js?v=310"></script>
+<script src="js/content_eigo10.js?v=310"></script>
+<script src="js/content_eigo11.js?v=310"></script>
+<script src="js/content_eigo12.js?v=310"></script>
+<script src="js/content_eigo13.js?v=310"></script>
+<script src="js/content_eigo14.js?v=310"></script>
+<script src="js/content_eigo15.js?v=310"></script>
+<script src="js/content_eigo16.js?v=310"></script>
+<script src="js/content_eigo17.js?v=310"></script>
+<script src="js/content_eigo18.js?v=310"></script>
+<script src="js/content_bunpo2.js?v=310"></script>
+<script src="js/content_kokugo3.js?v=310"></script>
+<script src="js/content_kana.js?v=310"></script>
+<script src="js/content_kazu.js?v=310"></script>
+<script src="js/content_card7.js?v=310"></script>
+<script src="js/content_puzzle7.js?v=310"></script>
+<script src="js/content_rika3.js?v=310"></script>
+<script src="js/content_rika4.js?v=310"></script>
+<script src="js/content_rika5.js?v=310"></script>
+<script src="js/content_shakai1.js?v=310"></script>
+<script src="js/content_shakai2.js?v=310"></script>
+<script src="js/content_shakai3.js?v=310"></script>
+<script src="js/content_hoju_shakai.js?v=310"></script>
+<script src="js/content_hoju_rika.js?v=310"></script>
+<script src="js/content_sho.js?v=310"></script>
+<script src="js/content_sho2.js?v=310"></script>
+<script src="js/lecture_more.js?v=310"></script>
+<script src="js/steps.js?v=310"></script>
+<script src="js/review.js?v=310"></script>
+<script src="js/rules.js?v=310"></script>
+<script src="js/store.js?v=310"></script>
+<script src="js/app.js?v=310"></script>
+<script src="js/moneylab.js?v=310"></script>
+<script src="js/ml_app.js?v=310"></script>
+<script src="js/typing.js?v=310"></script>
+<script src="js/transfer.js?v=310"></script>
 </body>
 </html>
