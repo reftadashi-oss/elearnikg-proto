@@ -90,8 +90,8 @@ let parentKid = null;
 function header(extra = '', ruto = false) {
   // 親戚の 子は 年長・年少なので、学年（1ねん）の かわりに label（ねんちょう など）を 出す。内容は 1年生
   return `<header><span>${me.ruby ? R(me.ruby) : esc(me.name)}（${me.label ? R(me.label) : Furigana.gradeLabel(me.grade, me.grade)}）</span>
-    ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}${extra}
-    ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : isGuest(me) ? `<button onclick="guestToTeacher()">${R('{先生|せんせい}の {画面|がめん}で {記録|きろく}を {見|み}る')}</button>` : ''}<button onclick="logout()">ログアウト</button></header>`;
+    ${ruto ? `<span class="ruto">${R('{普通預金|ふつうよきん}')}：<b>${Store.balance(me.id).toLocaleString()}</b> ルト</span>` : ''}<button class="hmenu" onclick="this.parentNode.classList.toggle('open')">≡ ${R('メニュー')}</button><span class="hbtns">${extra}
+    ${me.test ? `<button onclick="testToTeacher()">${R('{先生|せんせい}の {画面|がめん}へ')}</button>` : isGuest(me) ? `<button onclick="guestToTeacher()">${R('{先生|せんせい}の {画面|がめん}で {記録|きろく}を {見|み}る')}</button>` : ''}<button onclick="logout()">ログアウト</button></span></header>`;
 }
 function todayDots() {
   const n = Rules.rutoCountOn(Store.attemptsOf(me.id), Store.today()), cap = Rules.capFor(holiday());
