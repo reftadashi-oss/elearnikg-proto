@@ -11,6 +11,7 @@ const Rules = (() => {
     finRuto: 30,          // 学年の 仕上げ（50問）に 合格（8割以上）した回（2026年11月13日）。届かない回は 1（ふつうの 単元と おなじ）。1日1回・ルトの回数には 数えない
   };
   CONFIG.examRuto = 30;    // 漢検の形の まとめテストに はじめて 合格した回
+  CONFIG.sofukuRuto = 5;   // 5単元ごとの 総復習（20問）に 合格した回（2026年11月19日 社長 OK）。届かない回は 1。満点の 上乗せ・点数アップは なし
   CONFIG.bigAllRuto = 5;   // 理科・社会の カテゴリーの まとめテスト（20問）に 合格した回
   const isFin =unit => unit && unit.kind === 'fin';
 
@@ -76,6 +77,7 @@ const Rules = (() => {
       if (passed) r.notes.push('学年の仕上げ 合格');
       return r;
     }
+    if (unit.kind === 'sofuku') { r.ruto = passed ? CONFIG.sofukuRuto : 1; if (passed) r.notes.push('総復習 合格'); return r; }
     // 理科・社会の カテゴリーの まとめ（20問）：合格で 5ルト（2026年11月13日）。届かない回は ふつうと 同じ
     if (unit.big && passed) { r.ruto = CONFIG.bigAllRuto; return r; }
     // 漢検の形の まとめテスト（65〜100問）：はじめて 合格した回は 30ルト（2026年11月13日 社長）。2回目からの 合格・届かない回は ふつうと 同じ（仮）

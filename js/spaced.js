@@ -27,7 +27,7 @@ const Spaced = (() => {
     if (!se.units.length || !UNITS[se.units[0]]) return;
     const first = UNITS[se.units[0]], id = `sofuku-${se.id}`;
     UNITS[id] = { subject: first.subject, series: se.id, col: first.col, pass: first.pass, extra: true, kind: 'sofuku', id, name: '{総復習|そうふくしゅう}（5つの {単元|たんげん}）', make: () => makeSofuku(se.id),
-      lecture: ['{合格|ごうかく}した 5つの {単元|たんげん}から、ぜんぶで 20{問|もん} {出|で}るよ。', '8{割|わり}（16{問|もん}）できたら {合格|ごうかく}。つぎの 5つが おわったら、また {総復習|そうふくしゅう}が ひらくよ。'] };
+      lecture: ['{合格|ごうかく}した 5つの {単元|たんげん}から、ぜんぶで 20{問|もん} {出|で}るよ。', '8{割|わり}（16{問|もん}）できたら {合格|ごうかく}で 5ルト もらえるよ。つぎの 5つが おわったら、また {総復習|そうふくしゅう}が ひらくよ。'] };
   }));
   return { blocks };
 })();
