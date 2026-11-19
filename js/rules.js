@@ -21,10 +21,11 @@ const Rules = (() => {
   function unitState(history, unitId) {
     const h = unitHistory(history, unitId);
     const firstPerfect = h.findIndex(a => a.perfect);
-    const finished = firstPerfect >= 0 && h.length - firstPerfect - 1 >= 1; // 満点のあと＋1回（復習）でおしまい
-    const reviewNext = firstPerfect >= 0 && !finished;
+    const sp = /^spaced-/.test(unitId);   // 時間を あけた 復習は 中身が 毎回 かわるので「おしまい」「もう一度」に しない（spaced.js）
+    const finished = !sp && firstPerfect >= 0 && h.length - firstPerfect - 1 >= 1; // 満点のあと＋1回（復習）でおしまい
+    const reviewNext = !sp && firstPerfect >= 0 && !finished;
     const last = h[h.length - 1];
-    const retake = !!last && !last.passed;
+    const retake = !sp && !!last && !last.passed;
     let failStreak = 0;
     for (let i = h.length - 1; i >= 0 && !h[i].passed; i--) failStreak++;
     const bonusUsed = h.some(a => a.bonus > 0);
