@@ -21,7 +21,7 @@ const Rules = (() => {
   function unitState(history, unitId) {
     const h = unitHistory(history, unitId);
     const firstPerfect = h.findIndex(a => a.perfect);
-    const sp = /^spaced-/.test(unitId);   // 時間を あけた 復習は 中身が 毎回 かわるので「おしまい」「もう一度」に しない（spaced.js）
+    const sp = /^(spaced|sofuku)-/.test(unitId);   // 時間を あけた 復習は 中身が 毎回 かわるので「おしまい」「もう一度」に しない（spaced.js）
     const finished = !sp && firstPerfect >= 0 && h.length - firstPerfect - 1 >= 1; // 満点のあと＋1回（復習）でおしまい
     const reviewNext = !sp && firstPerfect >= 0 && !finished;
     const last = h[h.length - 1];

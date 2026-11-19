@@ -290,6 +290,7 @@ function unitStep(u, hist) {
   if (U.kind === 'fin') { const s = finStep(U.grade, hist); return s === 'now' || s === 'done' ? s : 'lock'; }
   if (!se) return 'now';
   if (!seriesOpen(se, hist)) return 'lock';
+  if (U.kind === 'sofuku') return Spaced.blocks(se.id, hist).length ? 'now' : 'lock';   // 5単元ごとの 総復習（spaced.js）
   if (U.kind === 'spaced') return Spaced.due(se.id, hist).length ? 'now' : 'lock';   // 時間を あけた 復習（spaced.js）：出す 単元が ある ときだけ
   if (U.extra) return U.kind === 'weak' ? (Review.ready(se.id, hist) ? 'now' : 'lock') : realUnits(se).every(x => cleared(hist, x)) ? 'now' : 'lock';
   if (cleared(hist, u)) return 'done';
@@ -320,6 +321,8 @@ function recommendations(hist) {
   const real = se => se.units.filter(u => !UNITS[u].extra);
   series.forEach(se => { const id = `weak-${se.id}`; if (Review.ready(se.id, hist) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: '{苦手|にがて}' }); });
   // 時間を あけた 復習（2026年11月19日。spaced.js）：苦手まとめの つぎ。カードは 1つだけ（下の filter）
+  // 5単元ごとの 総復習：苦手まとめの つぎ（時間を あけた 復習より 先）。カードは 1つだけ
+  series.forEach(se => { if (Spaced.blocks(se.id, hist).length) rec.push({ unit: `sofuku-${se.id}`, why: '{総復習|そうふくしゅう}' }); });
   series.forEach(se => { if (Spaced.due(se.id, hist).length) rec.push({ unit: `spaced-${se.id}`, why: 'わすれて ないかな' }); });
   Rules.weakUnits(hist).filter(w => !UNITS[w.unit].extra && !hideUnit(w.unit) && !OPTIONAL.has(subjectOf(seriesById(UNITS[w.unit].series))?.id) &&!Rules.unitState(hist, w.unit).finished).forEach(w => rec.push({ unit: w.unit, why: '{苦手|にがて}' }));
   for (const se of series) for (const u of real(se)) { const st = Rules.unitState(hist, u); if (!st.perfect && (st.tries || !cleared(hist, u))) rec.push({ unit: u, why: 'つぎの{単元|たんげん}' }); }   // 学年の スタートで とばした 単元（やって いない）は すすめない
@@ -327,7 +330,7 @@ function recommendations(hist) {
   series.forEach(se => { const id = `all-${se.id}`; if (real(se).every(u => Rules.unitState(hist, u).tries) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: 'まとめ' }); });
   const f = finCurrent(hist); if (f && f.s === 'now') rec.unshift({ unit: finId(f.g), why: '{仕上|しあ}げ' });   // 学年の 仕上げが ひらいたら いちばん先に
   // 苦手まとめは 1つだけ 出す（同じ ような カードが ならばないように。2026年11月13日）
-  const seen = new Set(); let weak = 0, sp = 0; return rec.filter(r => unitStep(r.unit, hist) !== 'lock' && !seen.has(r.unit) && seen.add(r.unit) && !(UNITS[r.unit].kind === 'weak' && weak++) && !(UNITS[r.unit].kind === 'spaced' && sp++)).slice(0, 4);
+  const seen = new Set(); let weak = 0, sp = 0, sf = 0; return rec.filter(r => unitStep(r.unit, hist) !== 'lock' && !seen.has(r.unit) && seen.add(r.unit) && !(UNITS[r.unit].kind === 'weak' && weak++) && !(UNITS[r.unit].kind === 'spaced' && sp++) && !(UNITS[r.unit].kind === 'sofuku' && sf++)).slice(0, 4);
 }
 
 function showTop() {
