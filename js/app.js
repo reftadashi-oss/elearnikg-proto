@@ -162,7 +162,8 @@ function effGrade(subj, hist, grade) {
   let g = grade;
   // 国語（漢検）と 算数は、その学年の「仕上げ」に 合格して はじめて 次の学年へ（2026年11月13日）
   // その学年までに 単元が 1つも ない 科目（社会は 4年から など）は、先取りで ひらかない
-  while (g < 8 && us.some(([, x]) => x <= g) && us.filter(([, x]) => x <= g).every(([u]) => cleared(hist, u)) && (g > 6 || !FIN.subj.includes(subj.id) || finPassed(hist, g))) g++;
+  // 仕上げの ある 科目（算数・漢検・文法）は、その学年に 単元が なくても 仕上げに 合格すれば 次へ（文法は 1・2年に 単元が ない）
+  while (g < 8 && (FIN.subj.includes(subj.id) || us.some(([, x]) => x <= g)) && us.filter(([, x]) => x <= g).every(([u]) => cleared(hist, u)) && (g > 6 || !FIN.subj.includes(subj.id) || finPassed(hist, g))) g++;
   m.set(key, g); return g;
 }
 // 漢検の「読み」の 先取り（2026年11月13日）：いまの 学年の 級までの 読みが ぜんぶ 合格なら、つぎの 級の 読みの 単元だけ 先に ひらく。
@@ -228,7 +229,8 @@ function roadStart(kid) {
 // ================= 学年の「仕上げ」（2026年11月13日。数・ルト・合格ラインは 仮） =================
 // 1〜6年。その学年までの 国語（漢検）と 算数の 単元が ぜんぶ 合格に なると ひらく。
 // その学年の 単元から 50問（算数 30・国語 20）。合格すると 30ルト。合格すると、国語と 算数の 次の学年が ひらく
-const FIN = { subj: ['math', 'kanken'], n: 50, math: 30, ruto: 30 };
+// 2026年11月19日：国語（文法・古典）x6 も 入れる（その学年の 文法も ぜんぶ 合格で 仕上げが ひらく。文法だけ 先に 進みすぎない）
+const FIN = { subj: ['math', 'kanken', 'x6'], n: 50, math: 30, ruto: 30 };
 const finId = g => `fin-${g}`;
 const finPassed = (hist, g) => hist.some(a => a.unit === finId(g) && a.passed && !a.invalid);
 const finNeed = g => FIN.subj.flatMap(id => SUBJECTS.find(s => s.id === id).series.flatMap(realUnits)).filter(u => unitGrade(u) <= g);

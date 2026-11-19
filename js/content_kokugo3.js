@@ -1,6 +1,6 @@
 // 国語 中学の のこり（2026年11月17日）。content_bunpo2.js の あとに 読む。
 // 「中学の 文法・言葉」（x6j）に 6単元を 足す：指示語・接続語／類義語・対義語／同音異義語・同訓異字／四字熟語／共通語と方言・言葉の変化／意味を まちがえやすい 言葉。
-// 新しい シリーズ「中学の 古典」（x6k）：歴史的仮名遣いと 古語（中1）／漢文の 返り点（中1）／平家物語（中2）／徒然草と 係り結び（中2）／漢詩（中2）／和歌（中3）／おくのほそ道と 俳句（中3）／論語（中3）。
+// 新しい シリーズ「中学の 古典」（x6m。前は x6k で 故事成語と かさなって いたので 2026年11月19日に かえた）：歴史的仮名遣いと 古語（中1）／漢文の 返り点（中1）／平家物語（中2）／徒然草と 係り結び（中2）／漢詩（中2）／和歌（中3）／おくのほそ道と 俳句（中3）／論語（中3）。
 // 古典の 本文は 昔の 作品（著作権の 切れた もの）から 短く 引いた。問題・答え・説明・学年は Claude の 案（仮。先生が 教科書と くらべる）。本や 過去問からは 写していない。
 (() => {
   const subj = SUBJECTS.find(s => s.id === 'x6'), sJ = subj.series.find(s => s.id === 'x6j');
@@ -17,7 +17,7 @@
   const ten = pool => () => { const m = new Map(); for (let i = 0; i < 400 && m.size < 10; i++) { const x = pick(pool)(); if (x && !m.has(x.key)) m.set(x.key, x); } const a = [...m.values()]; for (let i = 0; a.length < 10; i++) a.push(a[i]); return shuffle(a); };
   const COLK = '中学の古典';
   REPORT_COLUMNS.find(r => r.subject === '国語（文法・古典）').cols.push(COLK);
-  const sK = { id: 'x6k', name: '{中学|ちゅうがく}の{古典|こてん}', units: [] }; subj.series.push(sK);
+  const sK = { id: 'x6m', name: '{中学|ちゅうがく}の{古典|こてん}', units: [] }; subj.series.push(sK);
   const add = (se, col, name, grade, pool, ...lecture) => { const id = `${se.id}-${se.units.length + 1}`; UNITS[id] = { id, subject: 'x6', series: se.id, name: f(name), col, pass: 0.8, make: ten(pool), lecture: lecture.map(f), grade }; se.units.push(id); };
   const addJ = (...a) => add(sJ, '中学の文法・ことば', ...a), addK = (...a) => add(sK, COLK, ...a);
   const table = (T, ask, all, n = 2, tate) => T.map(([q, a]) => () => choice(ask(q), [a, ...shuffle((all || [...new Set(T.map(x => x[1]))]).filter(x => x !== a)).slice(0, n)], a, q, tate));
