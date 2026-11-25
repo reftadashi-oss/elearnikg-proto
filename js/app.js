@@ -637,10 +637,51 @@ function lecturePages(u, qs) {
   const L = (u.lecture || []).slice();
   let ex = '';
   try { ex = exampleHTML(u, qs); } catch (e) { console.warn('例題を作れなかった', u.id, e); }
-  if (!ex) return L;
+  let memo = [];
+  try { memo = memoPages(u, qs); } catch (e) { console.warn('おぼえようを作れなかった', u.id, e); }
+  if (!ex && !memo.length) return L;
   const at = L.length > 1 && HOWTO.test(L[L.length - 1]) ? L.length - 1 : L.length;
-  L.splice(at, 0, ex);
+  L.splice(at, 0, ...memo, ...(ex ? [ex] : []));
   return L;
+}
+// 「おぼえよう」の ページ（2026年11月26日 ユーザー「初見で 誰でも 解ける ように」）。
+// 知識の 単元（漢検・社会・理科・英単語・故事成語・情報モラル など）は、講義に 答えが ないと 初見では 解けない。
+// その 単元の 問題を 何回か 作って「問題 → 答え」の 表に し、例題の 前に 入れる。問題の データから 作るので、新しい 事実は 足さない。
+// 出さない もの：算数（考え方で 解く）・音や リズム・プログラム・盤面・長い 文の 問題。講義に もう 答えが 半分 以上 出て いる 単元
+const MEMO = { per: 8, maxPages: 5, tries: 8, longText: 70 };
+const memoPlain = h => String(h).replace(/<rt>[^<]*<\/rt>/g, '').replace(/<[^>]+>/g, ' ').replace(/\{([^|}]+)\|[^}]*\}/g, '$1').replace(/\[\[|\]\]/g, '').replace(/\s+/g, ' ').trim();
+function memoPages(u, qs = []) {
+  if (u.kind || u.extra || u.subject === 'math' || u.subject === 'x4') return [];
+  const items = new Map(); let still = 0;
+  const mine = new Set(qs.map(qKey));   // この 回に 出る 10問は かならず 表に 入れる（初見でも 解ける ように）
+  for (let t = -1; t < MEMO.tries && still < 2; t++) {
+    const before = items.size;
+    for (const q of (t < 0 ? qs : u.make(new Set())) || []) {
+      if (!q || q.tap || q.sound || q.judge || q.keys || q.arrows || q.term || items.has(qKey(q))) continue;
+      const ap = autoPick(q);
+      let stem = ap ? ap.stem : R(q.text);
+      const cut = stem.split(/<br\s*\/?>/i); if (cut.length > 1 && memoPlain(cut[0])) stem = cut[0];   // 「<br>この ことばに あう 絵は？」などの 指示は けす
+      const ans = ap ? ap.pick[Number(q.answer[0]) - 1] : ansText(u.id, q.answer.map(String), q.boxes);
+      if (!ans) continue;
+      const long = /<(table|div|svg)/i.test(stem) || memoPlain(stem).length > MEMO.longText;
+      items.set(qKey(q), long ? null : { stem, ans, mine: mine.has(qKey(q)) });
+    }
+    still = items.size === before ? still + 1 : 0;
+  }
+  const all = [...items.values()], ok = all.filter(Boolean);
+  if (ok.length < 3 || ok.length < all.length * 0.6) return [];                      // 長文・盤面が 多い 単元は 出さない
+  if (ok.every(x => /^[\d.\-\/\s]+$/.test(memoPlain(x.ans)))) return [];             // 答えが 数だけ（計算）の 単元は 出さない
+  const lec = memoPlain((u.lecture || []).join(' '));
+  if (ok.filter(x => lec.includes(memoPlain(x.ans))).length >= ok.length * 0.8) return [];   // 講義に もう 答えが 8割 以上 ある
+  // 表に のせる 数は ページの 上限まで。この 回の 問題を 先に えらび、のこりを ほかの 問題で うめて、まぜる
+  const cap = MEMO.maxPages * MEMO.per, list = shuffle([...ok.filter(x => x.mine), ...shuffle(ok.filter(x => !x.mine))].slice(0, cap));
+  const pages = [], n = Math.ceil(list.length / MEMO.per);
+  for (let i = 0; i < n; i++) {
+    const part = list.slice(i * MEMO.per, (i + 1) * MEMO.per);
+    pages.push(`<span class="lh memo">おぼえよう${n > 1 ? `（${i + 1}/${n}）` : ''}</span>${i === 0 ? 'この {単元|たんげん}で {出|で}る ことだよ。{声|こえ}に {出|だ}して {読|よ}んでから、{問題|もんだい}に すすもう。' : ''}
+      <table class="memo"><tr><th>{問題|もんだい}</th><th>こたえ</th></tr>${part.map(x => `<tr><td>${x.stem}</td><td><b>${x.ans}</b></td></tr>`).join('')}</table>`);
+  }
+  return pages;
 }
 function exampleHTML(u, qs) {
   if (u.kind) return '';                                    // まとめテスト・苦手まとめは なし
