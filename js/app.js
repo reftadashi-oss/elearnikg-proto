@@ -1273,9 +1273,9 @@ function typingBlock(childId, month, prev) {
     const a = inM.filter(r => r.level === l.id); if (!a.length) return '';
     const b = best(a, l.id), p = best(all.filter(r => monthOf(r.day) === prev), l.id);
     const keys = a.reduce((s, r) => s + r.keys, 0), miss = a.reduce((s, r) => s + r.miss, 0);
-    return `<tr><td>${l.label || 'レベル' + l.id}：${Furigana.render(l.name, 'none')}</td><td>${a.length}回</td><td><b>${b}</b>文字</td><td>${p ? `${p}文字` : '―'}</td><td>${keys + miss ? Math.round(keys / (keys + miss) * 100) : 0}%</td></tr>`;
+    return `<tr><td>${l.label || 'レベル' + l.id}：${Furigana.render(l.name, 'none')}</td><td>${a.length}回</td><td><b>${b}</b>文字（${a[0].sec}秒）</td><td>${p ? `${p}文字` : '―'}</td><td>${keys + miss ? Math.round(keys / (keys + miss) * 100) : 0}%</td></tr>`;
   }).join('');
-  return `<h3>タイピング</h3><table class="list"><tr><th>レベル</th><th>今月の回数</th><th>1回（${inM[0].sec}秒）の最高　今月</th><th>最高　先月</th><th>正しく打てた割合</th></tr>${rows}</table>`;
+  return `<h3>タイピング</h3><table class="list"><tr><th>レベル</th><th>今月の回数</th><th>1回の最高　今月</th><th>最高　先月</th><th>正しく打てた割合</th></tr>${rows}</table>`;
 }
 function reportHTML(childId, month) {
   const all = Store.attemptsOf(childId);

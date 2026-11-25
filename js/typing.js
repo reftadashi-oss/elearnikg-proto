@@ -89,8 +89,9 @@ const Typing = (() => {
       <div style="text-align:center">${kbdHTML(null)}<p class="note">${FNAME.map((n, i) => `<span class="kc f${i}" style="display:inline-flex;width:auto;height:auto;padding:0 8px;font-size:.95em;font-weight:normal">${R(n)}</span>`).join(' ')}</p></div>
       <div class="units">${LEVELS.filter(l => l.drill).map(lvBtn).join('')}</div>
       <h3>${R('② ことばの {練習|れんしゅう}（ローマ{字|じ}）')}</h3>
-      <div class="units">${LEVELS.filter(l => !l.drill).map(lvBtn).join('')}</div>
+      <div class="units">${LEVELS.filter(l => !l.drill && !l.bunko).map(lvBtn).join('')}</div>
       <label class="inline"><input type="checkbox" id="tg" ${showGuide ? 'checked' : ''}> ${R('{手本|てほん}（ローマ{字|じ}・キーボードの {図|ず}）を {出|だ}す')}</label>
+      ${typeof Bunko !== 'undefined' ? Bunko.menuHTML() : ''}
     </main>`;
     $('#tg').onchange = e => { showGuide = e.target.checked; };
   }
