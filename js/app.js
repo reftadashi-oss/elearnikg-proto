@@ -693,8 +693,8 @@ function exampleHTML(u, qs) {
   // リズムを打つ問題：答えの 数は プログラムの ための もの（子どもには 意味が ない）ので 出さない（2026年11月15日 社長の 指摘）
   if (q.tap) return `<span class="lh ex">{例題|れいだい}</span>この {単元|たんげん}の {問題|もんだい}は、こんな {形|かたち}だよ。
     <div class="q ex lbox" style="pointer-events:none;margin:10px 0;font-size:1.05em;text-align:center">${q.text}</div>
-    <p class="hint" style="font-size:1.15em;text-align:center;margin:4px 0">「スタート」を おして、{音符|おんぷ}の リズムに {合|あ}わせて「タン」を おそう。</p>`;
-  let a = ansText(u.id, q.answer.map(String), q.boxes);
+    <p class="hint" style="font-size:1.15em;text-align:center;margin:4px 0">${q.exHint || (q.tap.p ? '「スタート」を おして、{音符|おんぷ}の リズムに {合|あ}わせて「タン」を おそう。' : '')}</p>`;
+  let a = q.exAns || ansText(u.id, q.answer.map(String), q.boxes);
   if (/[一-鿿]/.test(a) && q.boxes[0] !== 'マス') a = `[[${a}]]`;                   // 県の名前など（ふりがなの しくみで 線つきに なる）
   const snd = q.sound ? `<p class="note">（{音|おと}が {出|で}る {問題|もんだい}だよ。{問題|もんだい}の ときに「きく」ボタンで {聞|き}けるよ）</p>` : '';
   return `<span class="lh ex">{例題|れいだい}</span>この {単元|たんげん}の {問題|もんだい}は、こんな {形|かたち}だよ。
