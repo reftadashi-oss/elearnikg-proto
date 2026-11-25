@@ -477,8 +477,11 @@
   window.Snd = {
     ctx: null, cur: null,
     // metro＝リズムの問題：はじめに「カチッ」を4回（1・2・3・4）、そのあとも1拍ごとに小さく鳴らす
-    play(seq, bpm = 96, metro = false) {
+    // 音は ヘッドホンの ページ（🎧）を 通ってから だけ 出す（ユーザー決定：音が出るのはヘッドホン）。ok＝ヘッドホンの ページの「音を ためす」
+    play(seq, bpm = 96, metro = false, ok = false) {
       if (!seq) return;
+      const c = typeof cur !== 'undefined' ? cur : null;
+      if (!ok && !(c && c.phonesOk)) { if (c && typeof showPhones === 'function') showPhones(() => showLecture(true)); return; }
       try {
         const A = this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
         if (A.state === 'suspended') A.resume();
@@ -546,6 +549,7 @@
     const q = Snd.tapQ; if (!q || Snd.tapping) return;
     const beat = 60 / TAP_BPM, msg = document.querySelector('.tapmsg');
     Snd.play([[0, 4]], TAP_BPM, true);   // カチッ4回＋4拍ぶんの小さいカチッ（音符の音は出さない）
+    if (!Snd.ctx) return;   // ヘッドホンの ページを 通って いない ときは 鳴らさない
     const A = Snd.ctx, t0 = A.currentTime + 0.1 + 4 * beat, taps = [];
     Snd.tapping = true; if (msg) msg.textContent = 'カチッ 4かいの あとから うってね';
     const hit = e => { if (e.type === 'keydown' && e.code !== 'Space') return; if (e.type === 'keydown') e.preventDefault(); taps.push(A.currentTime - t0); const b = document.querySelector('.tapbtn'); if (b) { b.classList.add('on'); setTimeout(() => b.classList.remove('on'), 90); } };

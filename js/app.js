@@ -786,7 +786,7 @@ function showPhones(next) {
       <div style="font-size:3.2em;line-height:1.2">🎧</div>
       <b>${R('ヘッドホンを つけよう')}</b>
       <p style="font-size:.7em;line-height:1.9;margin:10px auto;max-width:34em;text-align:left">${R('この {単元|たんげん}は {音|おと}が {出|で}る {問題|もんだい}だよ。<br>ヘッドホンを つけると、{音|おと}が よく {聞|き}こえて、まわりの {人|ひと}の じゃまにも ならないよ。<br>つけたら「{音|おと}を ためす」を おして、{聞|き}こえるか たしかめよう。{大|おお}きすぎる ときは、{音|おと}を {小|ちい}さく してね。')}</p>
-      <p style="font-size:.7em"><button class="big" onclick="window.Snd&&Snd.play([[523,.5],[659,.5],[784,1]])">▶ ${R('{音|おと}を ためす')}</button>
+      <p style="font-size:.7em"><button class="big" onclick="window.Snd&&Snd.play([[523,.5],[659,.5],[784,1]],96,false,true)">▶ ${R('{音|おと}を ためす')}</button>
       <button class="big primary" onclick="cur.phonesOk=true;cur.afterPhones()">${R('つけた！ はじめる')}</button></p>
     </div></div></div></main>`;
 }
