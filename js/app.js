@@ -1362,6 +1362,7 @@ function reportHTML(childId, month) {
     <div class="summary home"><h3>家でやるのがおすすめの単元</h3>
       ${homeRec.length ? `<ul>${homeRec.join('')}</ul><p class="note">まだ合格していない単元と、最近の正答率が80%未満の単元から、3つまで。「最近まちがえた問題」をいっしょに見てあげてください。</p>` : '<p>今は、とくにありません。よくできています。</p>'}</div>
     ${typingBlock(childId, month, prev)}
+    ${me && me.role !== 'parent' && window.htmlWorksBlock ? htmlWorksBlock(childId, month) : ''}
     <ul class="sum">
       <li>やった回数：${A.length}回、問題数：${qn}問</li>
       <li>正答率80%未満の種類：${weak.join('、') || 'なし'}（決まり：その月の最初の答えの正答率が80%未満）</li>

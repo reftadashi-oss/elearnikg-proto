@@ -188,6 +188,7 @@ const Store = (() => {
     S.users.filter(u => u.role === 'parent').forEach(p => { p.kids = kidIds(p).filter(id => !gone.includes(id)); p.child = p.kids[0]; });
     S.users = S.users.filter(u => !gone.includes(u.id) && !(u.role === 'parent' && !u.kids.length));
     S.attempts = S.attempts.filter(a => !gone.includes(a.child)); S.ledger = S.ledger.filter(l => !gone.includes(l.child));
+    for (const k of ['typing', 'html']) if (S[k]) S[k] = S[k].filter(r => !gone.includes(r.child));   // タイピングの 記録・HTMLの 作品も 消す
     gone.forEach(id => { delete S.attendance[id]; if (S.road) delete S.road[id]; });
     const ml = S.ml; if (ml) {
       gone.forEach(id => { if (ml.hold) delete ml.hold[id]; if (ml.snap) delete ml.snap[id]; });

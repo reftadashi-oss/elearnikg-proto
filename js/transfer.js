@@ -19,7 +19,7 @@ const Transfer = (() => {
       v: 1, username: c.username, name: c.name, exported: new Date().toISOString(),
       attempts: (S.attempts || []).filter(mine), ledger: (S.ledger || []).filter(mine),
       attendance: (S.attendance || {})[childId] || [], road: (S.road || {})[childId] || {},
-      assigned: (S.assigned || []).filter(mine), typing: (S.typing || []).filter(mine),
+      assigned: (S.assigned || []).filter(mine), typing: (S.typing || []).filter(mine), html: (S.html || []).filter(mine),
     };
   }
   async function encode(childId, since) {
@@ -69,7 +69,7 @@ const Transfer = (() => {
     S.road = S.road || {}; const road = S.road[id] = S.road[id] || {};
     for (const [sid, o] of Object.entries(d.road || {})) if (!road[sid] || String(o.at || '') > String(road[sid].at || '')) { road[sid] = o; n.road++; }
     // 宿題の しめい・タイピング：中身が まったく同じなら 足さない
-    for (const key of ['assigned', 'typing']) {
+    for (const key of ['assigned', 'typing', 'html']) {
       S[key] = S[key] || []; const seen = new Set(S[key].filter(r => r.child === id).map(r => JSON.stringify(Object.assign({}, r, { child: 0 }))));
       for (const r of d[key] || []) { const s = JSON.stringify(Object.assign({}, r, { child: 0 })); if (!seen.has(s)) { S[key].push(Object.assign({}, r, { child: id })); seen.add(s); n.other++; } }
     }
