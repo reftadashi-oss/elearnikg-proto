@@ -560,7 +560,19 @@ function paceTable(kids) {
 function paceKid(kid) {
   const p = paceOf(kid); if (!p) return '';
   const msg = p.done >= p.total ? 'ぜんぶ おわったよ！ すごい！' : p.diff >= 0 ? 'いい ペース！ この ちょうしで いこう' : 'すこしずつ すすめて いこう。おうちでも できるよ';
-  return `<p class="soon pacekid">${R(`📅 ${p.g}{年|ねん}の {算数|さんすう}と {国語|こくご}：${p.done} / ${p.total}　${msg}`)}</p>`;
+  return `<p class="soon pacekid">${R(`📅 ${p.g}{年|ねん}の {算数|さんすう}と {国語|こくご}：${p.done} / ${p.total}　${msg}`)}</p>${p.done >= p.total ? paceNext(p.g) : ''}`;
+}
+// 学年の 算数・国語が ぜんぶ おわったら「次の 学年へ」（2026年11月26日 ユーザー）。
+// 仕上げが まだ → 仕上げへ の ボタン。仕上げに 合格ずみ → 次の 学年の 算数・国語の さいしょの 単元へ（算数を 先に）
+function paceNext(g) {
+  const hist = Store.attemptsOf(me.id), st = finStep(g, hist);
+  const btn = (label, js) => `<p class="pacenext"><button class="primary big" onclick="${js}">${R(label)}</button></p>`;
+  if (st === 'now') return btn(`🏁 ${g}{年|ねん}の {仕上|しあ}げへ`, `startUnit('${finId(g)}')`);
+  if (st === 'wait') return `<p class="soon">${R('🏁 {仕上|しあ}げは 1{日|にち} 1{回|かい}。あした また チャレンジしよう')}</p>`;
+  if (st === 'lock') return `<p class="soon">${R('🏁 まえの {学年|がくねん}の のこりを おわらせると {仕上|しあ}げが ひらくよ')}</p>`;
+  const next = FIN.subj.flatMap(id => SUBJECTS.find(s => s.id === id).series.flatMap(realUnits)).find(u => unitGrade(u) > g && unitStep(u, hist) === 'now');
+  if (!next) return '';
+  return btn(g >= 6 ? '▶ {中学|ちゅうがく}の {算数|さんすう}・{国語|こくご}へ' : `▶ ${g + 1}{年|ねん}の {算数|さんすう}・{国語|こくご}へ`, `startUnit('${next}')`);
 }
 // 科目ごとの ロードマップ：おわった単元（たたむ）→ いまの単元 → 次の2つ（🔒）→ あと何こ
 // 学年の 仕上げ：ひらいたら ボタン、まだなら「あと 何単元で ひらくか」
