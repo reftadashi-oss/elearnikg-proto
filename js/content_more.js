@@ -318,7 +318,7 @@
     const areaList = i => codes(AREAS[i]).map(c => PN(c)).join('、');
     const areaPages = i => [
       `<div style="text-align:center">${nameMap(AREAS[i])}</div><span style="font-size:.8em">${KEN[i][0]}{地方|ちほう}の {都道府県|とどうふけん}（{北|きた}から {順|じゅん}に）：${areaList(i)}。{全部|ぜんぶ}で ${codes(AREAS[i]).length}つ。</span>`,
-      `<b>おぼえかたの コツ</b><br>①まず {海|うみ}に {面|めん}して いない {県|けん}（{内陸|ないりく}の {県|けん}）を さがそう。<br>②つぎに、{大|おお}きい {県|けん}・{形|かたち}が おもしろい {県|けん}を {目印|めじるし}に しよう。<br>③{目印|めじるし}の となりに ある {県|けん}を、{順|じゅん}に おぼえて いこう。<br>{声|こえ}に {出|だ}して、{地図|ちず}を ゆびで さしながら {言|い}うと おぼえやすいよ。`,
+      `<b>おぼえかたの コツ</b><br>①まず {海|うみ}に {面|めん}して いない {県|けん}（{内陸|ないりく}の {県|けん}）を さがそう。<br>②つぎに、{大|おお}きい {県|けん}・{形|かたち}が おもしろい {県|けん}を {目印|めじるし}に しよう。<br>③{目印|めじるし}の となりに ある {県|けん}を、{順|じゅん}に おぼえて いこう。<br>{心|こころ}の {中|なか}で {言|い}いながら、{地図|ちず}を ゆびで さしながら {言|い}うと おぼえやすいよ。`,
     ];
     const allPages = [
       `<div style="text-align:center">${nameMap(null)}</div><span style="font-size:.8em">{日本|にほん}には 47の {都道府県|とどうふけん}が あるよ（1{都|と}・1{道|どう}・2{府|ふ}・43{県|けん}）。{色|いろ}は {地方|ちほう}ごと：${KEN.map(([a], i) => `<span style="background:${AREA_COL[i]};padding:0 4px;border-radius:3px">${a}</span>`).join(' ')}</span>`,
@@ -589,7 +589,7 @@
     const picQ = x => choice(`${PIC(x[0], x[1])}<br>${i === 1 ? '●の {数|かず}は {英語|えいご}で？' : 'この {絵|え}は {英語|えいご}で？'}`, [x[2], ...others(x, 2).map(y => y[2])], x[2]);
     const wordQ = x => { const o = [x, ...others(x, 2)].map(y => `<span class="big">${y[0]}</span>`); return choice(`<span class="big">${x[2]}</span><br>この ことばに あう {絵|え}は？`, o, o[0]); };
     const matchMake = () => { const pool = shuffle(list.flatMap(x => [picQ(x), wordQ(x)])), a = pool.slice(0, 10); for (let k = 0; a.length < 10; k++) a.push(pool[k % pool.length]); return shuffle(a); };
-    add('x3', enS, `x3e-e${i + 1}`, `{絵|え}と ことば（${nm}）`, '英語', matchMake, [`{絵|え}と {英語|えいご}の ことばを あわせよう。<br>${big(`${list[0][0]} ＝ ${list[0][2]}`)}`, `{英語|えいご}の ことばを {声|こえ}に {出|だ}して {読|よ}んで みよう。<br>なれたら、つぎの 単元で ことばを {打|う}つ {練習|れんしゅう}を するよ。`.replace('単元', '{単元|たんげん}'), CHOOSE]);
+    add('x3', enS, `x3e-e${i + 1}`, `{絵|え}と ことば（${nm}）`, '英語', matchMake, [`{絵|え}と {英語|えいご}の ことばを あわせよう。<br>${big(`${list[0][0]} ＝ ${list[0][2]}`)}`, `{英語|えいご}の ことばを {心|こころ}の {中|なか}で {読|よ}んで みよう。<br>なれたら、つぎの 単元で ことばを {打|う}つ {練習|れんしゅう}を するよ。`.replace('単元', '{単元|たんげん}'), CHOOSE]);
     enU(i + 2, `ことば（${nm}）`, list.flatMap(([e, j, w]) => [eq(w, PIC(e, j), w), ...miss(w, PIC(e, j))]), `{絵|え}を {見|み}て、{英語|えいご}の ことばを {打|う}とう。`, `${big(`${list[0][0]} → ${list[0][2]}`)}`);
   });
   enU(7, 'ローマ{字|じ}と ちがう つづり', [['night', 'よる', '🌙'], ['light', 'ひかり', '💡'], ['eight', 'はち（8）', '8️⃣'], ['knife', 'ナイフ', '🔪'], ['phone', 'でんわ', '📞'], ['water', 'みず', '💧'], ['house', 'いえ', '🏠'], ['friend', 'ともだち', '🧑‍🤝‍🧑'], ['school', 'がっこう', '🏫'], ['music', 'おんがく', '🎵']].flatMap(([w, j, e]) => [eq(w, PIC(e, j), w), ...miss(w, PIC(e, j))]), `{英語|えいご}は ローマ{字|じ}の とおりに {読|よ}まない ことばが あるよ。${big('night')} は「ナイト」。`, `gh や k が {読|よ}まれない ことも あるよ。`);

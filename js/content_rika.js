@@ -227,7 +227,7 @@
     () => { const i = rand(0, ERA.length - 2), o = shuffle(ERA.map((_, k) => k).filter(k => k !== i + 1 && k !== i)).slice(0, 2); return choiceQ(`${eraName(i)}の つぎの 時代は？`, [eraName(i + 1), ...o.map(eraName)], eraName(i + 1), `n${i}`); },
     () => { const i = rand(1, ERA.length - 1), o = shuffle(ERA.map((_, k) => k).filter(k => k !== i - 1 && k !== i)).slice(0, 2); return choiceQ(`${eraName(i)}の 前の 時代は？`, [eraName(i - 1), ...o.map(eraName)], eraName(i - 1), `p${i}`); },
     () => { const a = rand(0, ERA.length - 1), b = rand(0, ERA.length - 1); if (a === b) return null; return choiceQ('先（古い）のは どっち？', [eraName(a), eraName(b)], eraName(Math.min(a, b)), `o${Math.min(a, b)}.${Math.max(a, b)}`); },
-  ), `時代の じゅんばんを おぼえよう。<br>${ERA.slice(0, 8).join(' → ')} →`, `${ERA.slice(8).join(' → ')}<br>「じょうもん・やよい・こふん・あすか・なら・へいあん…」と 声に 出すと おぼえやすいよ。<br>${CHOOSE}`);
+  ), `時代の じゅんばんを おぼえよう。<br>${ERA.slice(0, 8).join(' → ')} →`, `${ERA.slice(8).join(' → ')}<br>「じょうもん・やよい・こふん・あすか・なら・へいあん…」と 心の 中で となえると おぼえやすいよ。<br>${CHOOSE}`);
   const his = (name, list, l1) => unit('x1', sHis, SC.his, name, bank(list), l1, CHOOSE);
   his('縄文・弥生・古墳時代', [
     ['縄文時代に つくられた、なわの もようが ある 土器は？', '縄文土器', '弥生土器', 'はにわ'],

@@ -678,7 +678,7 @@ function memoPages(u, qs = []) {
   const pages = [], n = Math.ceil(list.length / MEMO.per);
   for (let i = 0; i < n; i++) {
     const part = list.slice(i * MEMO.per, (i + 1) * MEMO.per);
-    pages.push(`<span class="lh memo">おぼえよう${n > 1 ? `（${i + 1}/${n}）` : ''}</span>${i === 0 ? 'この {単元|たんげん}で {出|で}る ことだよ。{声|こえ}に {出|だ}して {読|よ}んでから、{問題|もんだい}に すすもう。' : ''}
+    pages.push(`<span class="lh memo">おぼえよう${n > 1 ? `（${i + 1}/${n}）` : ''}</span>${i === 0 ? 'この {単元|たんげん}で {出|で}る ことだよ。よく {見|み}て おぼえてから、{問題|もんだい}に すすもう。' : ''}
       <table class="memo"><tr><th>{問題|もんだい}</th><th>こたえ</th></tr>${part.map(x => `<tr><td>${x.stem}</td><td><b>${x.ans}</b></td></tr>`).join('')}</table>`);
   }
   return pages;
