@@ -31,7 +31,7 @@ const Spaced = (() => {
     return shuffle(qs);
   }
   SUBJECTS.forEach(s => s.series.forEach(se => {
-    if (!se.units.length || !UNITS[se.units[0]]) return;
+    if (!se.units.length || !UNITS[se.units[0]] || se.noSum) return;   // noSum の シリーズは 総復習なし
     const first = UNITS[se.units[0]], id = `sofuku-${se.id}`;
     UNITS[id] = { subject: first.subject, series: se.id, col: first.col, pass: first.pass, extra: true, kind: 'sofuku', id, make: () => makeSofuku(se.id),
       // 名前に「1回目・2回目」を 出す（子どもの 画面だけ。先生・保護者の 画面では 出さない）

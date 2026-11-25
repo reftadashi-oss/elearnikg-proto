@@ -95,7 +95,7 @@ const Review = (() => {
   };
 
   SUBJECTS.forEach(s => s.series.forEach(se => {
-    if (!se.units.length) return;
+    if (!se.units.length || se.noSum) return;   // noSum：まとめテスト・苦手まとめを 作らない シリーズ（Linuxの 宝さがし など）
     const first = UNITS[se.units[0]], base = { subject: first.subject, series: se.id, col: first.col, pass: first.pass, extra: true };
     const allId = `all-${se.id}`, weakId = `weak-${se.id}`;
     const big = BIG.has(s.id), n = big ? 20 : 10;

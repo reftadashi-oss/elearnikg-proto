@@ -318,13 +318,13 @@ function recommendations(hist) {
   // オプションの科目（詰将棋）は おすすめに 出さない。やりたい子が「すすみぐあい」から えらぶ
   const series = subjOrder.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s) && !(s.id === 'x7' && !me.label && me.grade >= 2)).flatMap(s => s.series).filter(se => se.units.length);   // 年長むけの ひらがな・かず（x7）は、2年生より 上の 子には おすすめに 出さない（6年に「かずを かぞえよう」が 出て いた。2026年11月18日）
   const real = se => se.units.filter(u => !UNITS[u].extra);
-  series.forEach(se => { const id = `weak-${se.id}`; if (Review.ready(se.id, hist) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: '{苦手|にがて}' }); });
+  series.filter(se => !se.noSum).forEach(se => { const id = `weak-${se.id}`; if (Review.ready(se.id, hist) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: '{苦手|にがて}' }); });
   // 5単元ごとの 総復習：苦手まとめの つぎ。カードは 1つだけ
-  series.forEach(se => { if (Spaced.blocks(se.id, hist).length) rec.push({ unit: `sofuku-${se.id}`, why: '{総復習|そうふくしゅう}' }); });
+  series.filter(se => !se.noSum).forEach(se => { if (Spaced.blocks(se.id, hist).length) rec.push({ unit: `sofuku-${se.id}`, why: '{総復習|そうふくしゅう}' }); });
   Rules.weakUnits(hist).filter(w => !UNITS[w.unit].extra && !hideUnit(w.unit) && !OPTIONAL.has(subjectOf(seriesById(UNITS[w.unit].series))?.id) &&!Rules.unitState(hist, w.unit).finished).forEach(w => rec.push({ unit: w.unit, why: '{苦手|にがて}' }));
   for (const se of series) for (const u of real(se)) { const st = Rules.unitState(hist, u); if (!st.perfect && (st.tries || !cleared(hist, u))) rec.push({ unit: u, why: 'つぎの{単元|たんげん}' }); }   // 学年の スタートで とばした 単元（やって いない）は すすめない
   for (const se of series) for (const u of real(se)) { if (Rules.unitState(hist, u).reviewNext) rec.push({ unit: u, why: '{復習|ふくしゅう}' }); }
-  series.forEach(se => { const id = `all-${se.id}`; if (real(se).every(u => Rules.unitState(hist, u).tries) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: 'まとめ' }); });
+  series.filter(se => !se.noSum).forEach(se => { const id = `all-${se.id}`; if (real(se).every(u => Rules.unitState(hist, u).tries) && !Rules.unitState(hist, id).finished) rec.push({ unit: id, why: 'まとめ' }); });
   const f = finCurrent(hist); if (f && f.s === 'now') rec.unshift({ unit: finId(f.g), why: '{仕上|しあ}げ' });   // 学年の 仕上げが ひらいたら いちばん先に
   // 苦手まとめは 1つだけ 出す（同じ ような カードが ならばないように。2026年11月13日）
   const seen = new Set(); let weak = 0, sf = 0; return rec.filter(r => unitStep(r.unit, hist) !== 'lock' && !seen.has(r.unit) && seen.add(r.unit) && !(UNITS[r.unit].kind === 'weak' && weak++) && !(UNITS[r.unit].kind === 'sofuku' && sf++)).slice(0, 4);
