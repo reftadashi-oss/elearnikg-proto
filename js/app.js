@@ -558,11 +558,13 @@ function paceTable(kids) {
     <table class="list"><tr><th>子ども</th><th>学年</th><th>合格</th><th>今日までの 目安</th><th>予定と くらべて</th></tr>
     ${rows.map(([c, p]) => `<tr><td>${esc(c.name)}</td><td>${p.g}年</td><td>${p.done} / ${p.total}</td><td>${p.expect}</td><td>${p.diff < 0 ? '<span class="flag">！</span> ' : ''}${paceText(p)}</td></tr>`).join('')}</table>`;
 }
+// 子どもの 画面の すすみぐあいの バー（2026年11月26日 ユーザー）。おわった 分だけ。おくれ（目安）は 子どもには 出さない
+const kidBar = (done, total, cls = '') => total ? `<div class="kbar ${cls}" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${Math.min(100, done / total * 100)}%"></span></div>` : '';
 // 子どもの 画面：やさしい ことばだけ
 function paceKid(kid) {
   const p = paceOf(kid); if (!p) return '';
   const msg = p.done >= p.total ? 'ぜんぶ おわったよ！ すごい！' : p.diff >= 0 ? 'いい ペース！ この ちょうしで いこう' : 'すこしずつ すすめて いこう。おうちでも できるよ';
-  return `<p class="soon pacekid">${R(`📅 ${p.g}{年|ねん}の {算数|さんすう}と {国語|こくご}：${p.done} / ${p.total}　${msg}`)}</p>${p.done >= p.total ? paceNext(p.g) : ''}`;
+  return `<p class="soon pacekid">${R(`📅 ${p.g}{年|ねん}の {算数|さんすう}と {国語|こくご}：${p.done} / ${p.total}　${msg}`)}</p>${kidBar(p.done, p.total)}${p.done >= p.total ? paceNext(p.g) : ''}`;
 }
 // 学年の 算数・国語が ぜんぶ おわったら「次の 学年へ」（2026年11月26日 ユーザー）。
 // 仕上げが まだ → 仕上げへ の ボタン。仕上げに 合格ずみ → 次の 学年の 算数・国語の さいしょの 単元へ（算数を 先に）
@@ -583,8 +585,10 @@ function finBox(hist, unitBtn) {
   const id = finId(f.g);
   if (f.s === 'now') return `<div class="series road fin"><h3>🏁 ${R(UNITS[id].name)} <small class="prog">${R(`${FIN.n}{問|もん}・{合格|ごうかく}で ${FIN.ruto}ルト`)}</small></h3><div class="units path">${unitBtn(id, 'いま')}</div></div>`;
   if (f.s === 'wait') return `<p class="soon fin">🏁 ${R(`${UNITS[id].name}：きょうは もう やったよ。あした また チャレンジしよう（1{日|にち} 1{回|かい}）`)}</p>`;
-  const left = finNeed(f.g).filter(u => !cleared(hist, u)).length;
-  return `<p class="soon fin">🏁 ${R(`${UNITS[id].name}：{国語|こくご}と {算数|さんすう}の のこり ${left}{単元|たんげん}で ひらくよ`)}</p>`;
+  const need = finNeed(f.g), left = need.filter(u => !cleared(hist, u)).length;
+  // バーは「この 学年の 単元 ＋ 前の 学年の のこり」で 見る（1年からの 全部で 見ると、もう 進んで いるように 見えて しまう）。前の 学年の のこりが ない ときは 上の 📅 の バーと 同じなので 出さない
+  const before = need.filter(u => unitGrade(u) < f.g && !cleared(hist, u)).length, base = need.filter(u => unitGrade(u) === f.g).length + before;
+  return `<p class="soon fin">🏁 ${R(`${UNITS[id].name}：{国語|こくご}と {算数|さんすう}の のこり ${left}{単元|たんげん}で ひらくよ`)}</p>${before ? kidBar(base - left, base, 'fin') : ''}`;
 }
 // 科目ごとの ロードマップ。いまの 学年で できない（学年が まだの）単元・シリーズ・科目は 出さない（2026年11月13日）
 function roadSubject(s, hist, unitBtn) {
