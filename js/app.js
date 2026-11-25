@@ -348,6 +348,7 @@ function showTop() {
     <div class="units rec-sub">${rec.slice(1).map(r => unitBtn(r.unit, r.why)).join('')}</div>` : R('ぜんぶ おしまい！')}
     <h2>${R('すすみぐあい')}</h2>
     <p class="note">${R('{合格|ごうかく}すると、{次|つぎ}の {単元|たんげん}が ひらくよ。{国語|こくご}と {算数|さんすう}は、その {学年|がくねん}の {単元|たんげん}が ぜんぶ {合格|ごうかく}に なると「{仕上|しあ}げ」が ひらくよ。{仕上|しあ}げに {合格|ごうかく}すると、{次|つぎ}の {学年|がくねん}へ すすめるよ。')}</p>
+    ${paceKid(me.id)}
     ${finBox(hist, unitBtn)}
     ${SUBJECTS.filter(s => !OPTIONAL.has(s.id) && !hideSubj(s)).map(s => roadSubject(s, hist, unitBtn)).join('')}
     <h2>${R('オプション')} <small class="prog">${R('すきな ときに')}</small></h2>
@@ -520,6 +521,47 @@ function planReset(sid) {
   Store.save(); showTeacher('plan');
 }
 
+// ================= 学年の すすみぐあい（2026年11月26日 ユーザー） =================
+// その学年の 算数と 国語（FIN.subj：算数・漢検・国語（文法・古典））は、その学年のうち（3月まで）に おわらせる。
+// 目安 ＝ その学年の 単元数 ×（4月1日〔とちゅうで 入った子は 入った日〕から 今日までの 日数 ÷ 3月31日までの 日数）。来た 日数ではなく カレンダーで 見る。
+// 先生・保護者の 画面には「予定より ○単元 先／おくれ」。子どもの 画面には やさしい ことばだけ（おくれの 数は 出さない。焦らせない）
+function paceOf(kid) {
+  const c = Store.get().users.find(u => u.id === kid); if (!c || c.role !== 'child' || !(c.grade >= 1 && c.grade <= 6)) return null;
+  const g = c.grade, hist = Store.attemptsOf(kid);
+  const us = FIN.subj.flatMap(id => SUBJECTS.find(s => s.id === id).series.flatMap(realUnits)).filter(u => unitGrade(u) === g);
+  if (!us.length) return null;
+  const done = us.filter(u => cleared(hist, u, kid)).length;
+  const t = Store.today(), y = +t.slice(0, 4) - (+t.slice(5, 7) < 4 ? 1 : 0);
+  const D = s => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / 864e5;
+  const start = Math.max(D(`${y}-04-01`), c.opened ? D(c.opened) : 0), end = D(`${y + 1}-03-31`);
+  const frac = Math.min(1, Math.max(0, (D(t) - start + 1) / (end - start + 1)));
+  const expect = Math.round(us.length * frac);
+  return { g, total: us.length, done, expect, diff: done - expect };
+}
+const paceText = p => p.diff >= 0 ? `予定より ${p.diff}単元 先` : `予定より ${-p.diff}単元 おくれ`;
+// 先生・保護者の 画面（月の 記録の 上）
+function paceBlock(kid) {
+  const p = paceOf(kid); if (!p) return '';
+  return `<div class="summary pace"><h3>${p.g}年の 算数・国語の すすみぐあい（3月までに ぜんぶ）</h3>
+    <div class="pbar"><span class="p-done" style="width:${p.done / p.total * 100}%"></span></div>
+    <p><b>${p.done} / ${p.total}単元</b>　今日までの 目安：${p.expect}単元　→ <b class="${p.diff < 0 ? 'late' : ''}">${paceText(p)}</b></p>
+    <p class="note">目安は 4月1日（とちゅうで 入った ときは 入った日）から 3月31日までを 日数で 分けた 数です。週1・週3の コースは、ROOTの 中だけでは 終わらないので、家でも すすめてください（家で 解いた 分は ルトなし）。</p></div>`;
+}
+// 先生の 画面「注意・苦手」：みんなの すすみぐあい（おくれの 大きい 順）
+function paceTable(kids) {
+  const rows = kids.map(c => [c, paceOf(c.id)]).filter(x => x[1]).sort((a, b) => a[1].diff - b[1].diff);
+  if (!rows.length) return '';
+  return `<h3>学年の すすみぐあい（算数・国語・3月までに ぜんぶ）</h3>
+    <p class="note">おくれて いる 子は、家で やる 単元を 保護者に 伝える・あいた 時間に やる（ルトなし）など。子どもの 画面には おくれの 数は 出して いません。</p>
+    <table class="list"><tr><th>子ども</th><th>学年</th><th>合格</th><th>今日までの 目安</th><th>予定と くらべて</th></tr>
+    ${rows.map(([c, p]) => `<tr><td>${esc(c.name)}</td><td>${p.g}年</td><td>${p.done} / ${p.total}</td><td>${p.expect}</td><td>${p.diff < 0 ? '<span class="flag">！</span> ' : ''}${paceText(p)}</td></tr>`).join('')}</table>`;
+}
+// 子どもの 画面：やさしい ことばだけ
+function paceKid(kid) {
+  const p = paceOf(kid); if (!p) return '';
+  const msg = p.done >= p.total ? 'ぜんぶ おわったよ！ すごい！' : p.diff >= 0 ? 'いい ペース！ この ちょうしで いこう' : 'すこしずつ すすめて いこう。おうちでも できるよ';
+  return `<p class="soon pacekid">${R(`📅 ${p.g}{年|ねん}の {算数|さんすう}と {国語|こくご}：${p.done} / ${p.total}　${msg}`)}</p>`;
+}
 // 科目ごとの ロードマップ：おわった単元（たたむ）→ いまの単元 → 次の2つ（🔒）→ あと何こ
 // 学年の 仕上げ：ひらいたら ボタン、まだなら「あと 何単元で ひらくか」
 function finBox(hist, unitBtn) {
@@ -1138,6 +1180,7 @@ function showTeacher(tab) {
       <table class="list"><tr><th>子ども</th><th>単元</th><th>正答率</th><th>宿題</th></tr>
       ${kids.flatMap(c => { const h = Store.attemptsOf(c.id), p = assignPending(c.id, h); return Rules.weakUnits(h).map(w => `<tr><td>${esc(c.name)}</td><td>${R(UNITS[w.unit].name)}</td><td>${pct(w.ok, w.n)}</td><td>${p.some(a => a.unit === w.unit) ? '宿題にした' : `<button onclick="assignUnit('${c.id}','${w.unit}')">宿題にする</button>`}</td></tr>
         <tr class="drow"><td colspan="4"><details class="detail"><summary>中身を見る（最近${w.n}問）</summary>${weakDetail(c.id, w.unit)}</details></td></tr>`); }).join('') || '<tr><td colspan="4">ありません</td></tr>'}</table>
+      ${paceTable(kids)}
       ${assignTable(kids)}
       ${hardQuestions(kids)}`;
   } else if (tTab === 'child') {
@@ -1261,6 +1304,7 @@ function reportHTML(childId, month) {
   return `
     <label>月：<select id="mon">${months.map(x => `<option ${x === month ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
     <h2>${y}年${m}月1日〜${m}月${lastDay}日${isNow ? `（今日まで）` : ``}</h2>
+    ${paceBlock(childId)}
     <div class="summary review"><h3>${m}月の総評</h3><ul>${review.map(s => `<li>${s}</li>`).join('')}</ul><p class="note">記録から自動で作った文です。</p></div>
     <div class="summary home"><h3>家でやるのがおすすめの単元</h3>
       ${homeRec.length ? `<ul>${homeRec.join('')}</ul><p class="note">まだ合格していない単元と、最近の正答率が80%未満の単元から、3つまで。「最近まちがえた問題」をいっしょに見てあげてください。</p>` : '<p>今は、とくにありません。よくできています。</p>'}</div>
