@@ -28,16 +28,18 @@ const holiday = () => Store.get().settings.holiday;
 function showLogin(msg = '') {
   viewMode = 'all';
   app().innerHTML = `
-  <div class="card login">
-    <h1>ROOT Eラーニング</h1>
-    <label><span>${R('ユーザー{名|めい}')}</span><input id="u" autocomplete="off"></label>
-    <label>パスワード<input id="p" type="password"></label>
+  <div class="loginwrap"><div class="card login">
+    <h1 class="logo"><b>ROOT</b><span>Eラーニング</span></h1>
+    <label><span>${R('ユーザー{名|めい}')}</span><input id="u" autocomplete="off"${msg ? ' aria-invalid="true"' : ''}></label>
+    <label>パスワード<input id="p" type="password"${msg ? ' aria-invalid="true"' : ''}></label>
     <button id="go" class="primary">${R('{入|はい}る')}</button>
-    <p class="msg">${msg}</p>
+    <p class="msg" role="alert">${msg ? `<span>${msg}</span>` : ''}</p>
     <p class="note">${R('{試作品|しさくひん}です。{名前|なまえ}はすべて{架空|かくう}です。')}</p>
-  </div>`;
+  </div></div>`;
   $('#u').focus();
   const go = async () => {
+    if ($('#go').disabled) return;
+    $('#go').disabled = true;   // 二度 おし しない（入る まで 押せない 色）
     const r = await Store.login($('#u').value, $('#p').value);
     if (r.ok) { me = r.user; sessionStorage.setItem('me', me.id); touch(); route(); }
     else if (r.locked) showLogin(R('ロックされました。{先生|せんせい}に {言|い}ってね。'));
