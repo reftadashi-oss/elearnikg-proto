@@ -877,7 +877,7 @@ function kanaPad() {
 function isRight(q, ans) {
   return q.answer.every((a, k) => {
     const s = String(ans[k]).trim();
-    if (q.keys) return String(a) === s; // キーボード：大文字・小文字も そのまま
+    if (q.keys) return q.ci ? String(a).toLowerCase() === s.toLowerCase() : String(a) === s; // キーボード：大文字・小文字も そのまま
     if (q.judge) return q.judge(s);     // プログラミング（ロボット）：命令を動かして確かめる（道は何とおりでもよい）
     if (q.latin) { const n = s.toLowerCase().replace(/\s+/g, ' '); return (q.roma && Kana.finish(n) === q.roma) || [a, ...(q.alts || [])].some(x => String(x).toLowerCase() === n); }
     if (!q.kana && s !== '' && !isNaN(Number(s)) && !isNaN(Number(a))) return Number(s) === Number(a);

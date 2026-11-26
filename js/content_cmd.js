@@ -18,7 +18,8 @@
   const D = (c, h) => ({ d: true, c, h: !!h });
   const T = (t, h) => ({ d: false, t: t.replace(/([一-鿿々]+)\([ぁ-ゟ]+\)/g, '$1'), h: !!h });
   const HOME = ['Users', 'tanken'];
-  const world = (homeC, extra) => ({ fs: D({ Users: D({ tanken: D(homeC), Public: D({}) }), Windows: D({ System32: D({}) }) }), net: { me: '192.168.1.' + rand(10, 60), gw: '192.168.1.1', hosts: {} }, ...extra });
+  const mac = () => [((rand(0, 63) << 2) | 2), ...Array.from({ length: 5 }, () => rand(0, 255))].map(x => x.toString(16).padStart(2, '0')).join('-');
+  const world = (homeC, extra) => ({ fs: D({ Users: D({ tanken: D(homeC), Public: D({}) }), Windows: D({ System32: D({}) }) }), net: { me: '192.168.1.' + rand(10, 60), gw: '192.168.1.1', gwmac: mac(), hosts: {} }, ...extra });
 
   const stages = {
     1: () => { const p = pw(), names = shuffle(['memo.txt', 'takara.txt', 'himitsu.txt', 'nikki.txt', 'kaimono.txt']).slice(0, 4), at = rand(0, 3), c = {};
@@ -48,9 +49,27 @@
       c[tops[0]].c['Ura'] = D({ [`${pick(WORDS)}.txt`]: T(big.join('\n')) }, true);
       c['hint.txt'] = T('どこかの フォルダの 中に、かくしフォルダが ある。\nその 中の 大きな ファイルの どこかに aikotoba と 書いた 行が ある。');
       return world(c, { p, box: 'あいことば', goal: 'これまでの まとめ。<b>hint.txt</b> を 読(よ)んで、<b>dir /a</b>・<b>cd</b>・<b>findstr</b> を 組(く)み合(あ)わせよう。' }); },
+    // 9：ping に 返事を しない 設定の サーバー（動いて いる）と、本当に 止まって いる サーバーを 見分ける。curl で ホームページが 返るかも 見る
+    9: () => { const names = shuffle(Object.keys(SITE)).slice(0, 4), [quiet, down] = shuffle(names.slice()), w = world({}, { box: 'ping に へんじ しない きかい', goal: `ホームページを 出(だ)す きかい（サーバー）が 4台(だい)。1台(だい)は 本当(ほんとう)に 止(と)まって いて、1台(だい)は 動(うご)いて いるのに <b>ping に 返事(へんじ)を しない 設定(せってい)</b>。<b>ping 名前(なまえ)</b> と <b>curl http://名前(なまえ)</b> で しらべて、<b>動(うご)いて いるのに ping に 返事(へんじ)しない</b> きかいの 名前(なまえ)を 入(い)れよう。きかい：<b>${names.join('・')}</b>` });
+      names.forEach((n, i) => { w.net.hosts[n] = { ip: `192.168.1.${150 + i * 9 + rand(0, 6)}`, up: n !== down, icmp: n !== quiet, web: true }; }); w.p = quiet; return w; },
+    // 10：netstat -an で TCP と UDP を 見る（答えの 形は 3しゅるい）。相手の IP は 例に 使う ための 番号（203.0.113.x・198.51.100.x）
+    10: () => { const w = world({}, {}), me = w.net.me, used = new Set([135, 445, 5353, 123]), port = (a, b) => { let x; do x = rand(a, b); while (used.has(x)); used.add(x); return x; };
+      const far = () => `${pick(['203.0.113', '198.51.100'])}.${rand(2, 250)}`, n = rand(3, 5), at = rand(0, n - 1), cn = [];
+      cn.push({ pr: 'TCP', l: '0.0.0.0:135', f: '0.0.0.0:0', s: 'LISTENING', lp: 135 }, { pr: 'TCP', l: '0.0.0.0:445', f: '0.0.0.0:0', s: 'LISTENING', lp: 445 });
+      for (let i = 0; i < n; i++) { const lp = port(49200, 64900), ip = far(), fp = i === at ? 80 : 443; cn.push({ pr: 'TCP', l: `${me}:${lp}`, f: `${ip}:${fp}`, s: 'ESTABLISHED', lp, ip, fp }); }
+      const u = rand(2, 5); for (let i = 0; i < u; i++) { const lp = i === 0 ? 5353 : i === 1 ? 123 : port(50000, 64000); cn.push({ pr: 'UDP', l: `${i < 2 ? '0.0.0.0' : me}:${lp}`, f: '*:*', s: '', lp }); }
+      w.net.cn = cn; const t = rand(0, 2), H = '<b>netstat -an</b> で、いま 動(うご)いて いる 通信(つうしん)の 一覧(いちらん)を 見(み)よう。';
+      if (t === 0) { const c = pick(cn.filter(x => x.lp !== 135 && x.lp !== 445)); w.p = c.pr; w.k = c.lp; w.ci = true; w.box = 'TCP か UDP'; w.goal = `${H}<b>ローカル アドレス</b>の ポート番号(ばんごう)（: の うしろ）が <b>${c.lp}</b> の 通信(つうしん)は、<b>TCP</b> と <b>UDP</b> の どっち？`; }
+      else if (t === 1) { w.p = String(u); w.box = 'UDP の ぎょうの かず'; w.goal = `${H}<b>UDP</b> の 行(ぎょう)は いくつ ある？（<b>netstat -an -p udp</b> で UDP だけ 出(だ)せる）`; }
+      else { w.p = cn.find(x => x.fp === 80).ip; w.box = 'IPアドレス'; w.goal = `${H}TCP で つながって いる（ESTABLISHED）相手(あいて)の うち、<b>相手(あいて)の ポートが 80</b>（ふつうの ホームページ）の 相手(あいて)の <b>IPアドレス</b>を 入(い)れよう（: より 前(まえ)の 番号(ばんごう)だけ）。`; }
+      return w; },
+    // 11：arp -a で MACアドレス。表には さいきん やりとりした きかいだけ 出るので、先に ping する
+    11: () => { const names = shuffle(['printer', 'tablet', 'pc-kyoushitsu', 'nas', 'camera']).slice(0, 4), t = pick(names), w = world({}, { ci: true, box: `${t} の MACアドレス`, goal: `<b>${t}</b> の <b>MACアドレス</b>を しらべよう。<b>arp -a</b> の 表(ひょう)には、さいきん やりとりした きかいだけ 出(で)る。まず <b>ping ${t}</b> で やりとりしてから <b>arp -a</b>。答(こた)えは「物理(ぶつり)アドレス」の らんを - も いっしょに 入(い)れよう。きかい：<b>${names.join('・')}</b>` });
+      names.forEach((n, i) => { w.net.hosts[n] = { ip: `192.168.1.${100 + i * 7 + rand(0, 5)}`, up: true, mac: mac() }; }); w.p = w.net.hosts[t].mac; w.k = t; return w; },
   };
 
   // ---------- コマンド ----------
+  const SITE = { 'gakkou-web': 'がっこうの おしらせ', toshokan: 'としょかんの 本さがし', tenki: 'きょうの てんき', kyushoku: 'きゅうしょくの こんだて', zukan: 'いきもの ずかん' };
   const W = {}; let wid = 0;
   const clone = o => JSON.parse(JSON.stringify(o));
   const key = (n, k) => n && n.d ? Object.keys(n.c).find(x => x.toLowerCase() === k.toLowerCase()) : null;   // Windows は 大文字・小文字を 区別しない
@@ -73,6 +92,9 @@
     '  findstr ことば ファイル   ことばが ある 行だけ 出す',
     '  ipconfig       この パソコンの ネットの 番号（IPアドレス）',
     '  ping 名前      ほかの きかいに 「とどく？」と 聞く',
+    '  curl http://名前   その きかいの ホームページを もらう',
+    '  netstat -an    いまの 通信の 一覧（-p tcp / -p udp で しぼる）',
+    '  arp -a         IPアドレスと MACアドレスの 表',
     '  hostname / whoami / ver / echo / cls',
     '  ↑ キーで 前の コマンド。Tab キーで 名前の のこりを 入れる。',
   ];
@@ -123,11 +145,35 @@
         const name = Object.keys(st.net.hosts).find(k => k === h || st.net.hosts[k].ip === h);
         const me = h === 'root-pc' || h === 'localhost' || h === '127.0.0.1' || h === st.net.me, gw = h === st.net.gw || h === 'router';
         if (!name && !me && !gw) { err(`ping 要求ではホスト ${rest[0]} が見つかりませんでした。（そんな 名前の きかいは ないよ。名前を たしかめよう）`); break; }
-        const ip = me ? st.net.me : gw ? st.net.gw : st.net.hosts[name].ip, up = me || gw || st.net.hosts[name].up;
+        const ip = me ? st.net.me : gw ? st.net.gw : st.net.hosts[name].ip, up = me || gw || (st.net.hosts[name].up && st.net.hosts[name].icmp !== false);
+        if (name && st.net.hosts[name].up) st.arp.add(name);
         say(''); say(`${rest[0]} [${ip}]に ping を送信しています 32 バイトのデータ:`);
         for (let i = 0; i < 4; i++) say(up ? `${ip} からの応答: バイト数 =32 時間 =${me ? '<1' : rand(1, 9)}ms TTL=128` : '要求がタイムアウトしました。');
         say(''); say(`${ip} の ping 統計:`); say(`    パケット数: 送信 = 4、受信 = ${up ? 4 : 0}、損失 = ${up ? 0 : 4} (${up ? 0 : 100}% の損失)`);
-        out.push({ s: up ? '→ 返事が あった（つながって いる）' : '→ 返事が ない（つながって いない）', note: true }); break; }
+        out.push({ s: up ? '→ 返事が あった（つながって いる）' : '→ 返事が ない（つながって いない か、ping に 返事を しない せっていかも）', note: true }); break; }
+      case 'curl': { const u = rest.find(x => !x.startsWith('-')); if (!u) { err('curl の あとに アドレスを 書いてね（例：curl http://tenki）'); break; }
+        const m = /^(?:(https?):\/\/)?([^/:]+)(?::(\d+))?/i.exec(u), h = (m && m[2] || '').toLowerCase(), pt = m && m[3] ? +m[3] : m && /^https$/i.test(m[1] || '') ? 443 : 80;
+        const name = Object.keys(st.net.hosts).find(k => k === h || st.net.hosts[k].ip === h), gw = h === st.net.gw || h === 'router', me = h === 'root-pc' || h === 'localhost' || h === '127.0.0.1' || h === st.net.me;
+        if (!name && !gw && !me) { err(`curl: (6) Could not resolve host: ${h}（そんな 名前の きかいは ないよ）`); break; }
+        const hs = name && st.net.hosts[name];
+        if (me || (hs && !hs.web && hs.up)) { err(`curl: (7) Failed to connect to ${h} port ${pt}: Connection refused（この きかいは ホームページを 出して いないよ）`); break; }
+        if (hs && !hs.up) { err(`curl: (28) Failed to connect to ${h} port ${pt} after 21000 ms: Timed out（返事が ない）`); out.push({ s: '→ ホームページも 返って こない（止まって いる かも）', note: true }); break; }
+        if (pt !== 80 && pt !== 443) { err(`curl: (7) Failed to connect to ${h} port ${pt}: Connection refused（その ポートでは 返事が ないよ）`); break; }
+        if (name) st.arp.add(name);
+        const title = gw ? 'ルーター（入るには 大人の パスワードが いる）' : SITE[name] || name;
+        say(`<html><head><title>${title}</title></head>`); say(`<body><h1>${title}</h1> ...</body></html>`);
+        out.push({ s: '→ ホームページが 返って きた（この きかいは 動いて いる）', note: true }); break; }
+      case 'arp': { if (!sw.length && !args.some(x => /^-[ag]$/i.test(x))) { say('使い方: arp -a     （IPアドレスと MACアドレスの 表を 出す）'); break; }
+        const f = rest.find(x => !/^-/.test(x)), rows = [[st.net.gw, st.net.gwmac, '動的'], ...Object.keys(st.net.hosts).filter(k => st.arp.has(k)).map(k => [st.net.hosts[k].ip, st.net.hosts[k].mac || '00-00-00-00-00-00', '動的']), ['192.168.1.255', 'ff-ff-ff-ff-ff-ff', '静的'], ['224.0.0.22', '01-00-5e-00-00-16', '静的']].filter(r => !f || r[0] === f);
+        if (!rows.length) { err('ARP エントリが見つかりませんでした。（その IPアドレスは 表に ないよ。先に ping してみよう）'); break; }
+        say(''); say(`インターフェイス: ${st.net.me} --- 0x5`); say('  インターネット アドレス 物理アドレス          種類');
+        rows.forEach(r => say(`  ${r[0].padEnd(22)} ${r[1].padEnd(21)} ${r[2]}`)); break; }
+      case 'netstat': { const cn = st.net.cn || [], fl = args.filter(x => /^[-/]/.test(x)).join('').toLowerCase(), pi = args.findIndex(x => /^[-/]p$/i.test(x)), pp = pi >= 0 ? (args[pi + 1] || '').toUpperCase() : '';
+        if (pi >= 0 && pp !== 'TCP' && pp !== 'UDP') { err('-p の あとに tcp か udp を 書いてね（例：netstat -an -p udp）'); break; }
+        const list = cn.filter(x => (fl.includes('a') || x.s === 'ESTABLISHED') && (!pp || x.pr === pp));
+        say(''); say('アクティブな接続'); say(''); say('  プロトコル  ローカル アドレス        外部アドレス           状態');
+        list.forEach(x => say(`  ${x.pr.padEnd(10)}  ${x.l.padEnd(23)}  ${x.f.padEnd(21)}  ${x.s}`));
+        if (!fl.includes('a')) out.push({ s: '→ つながって いる TCP だけ 出たよ。-a を つけると ぜんぶ 出る（netstat -an）', note: true }); break; }
       case 'del': case 'erase': case 'rd': case 'rmdir': case 'format': case 'shutdown': case 'move': case 'copy': case 'ren': case 'mkdir': case 'md':
         err(`${cmd}: この 練習では つかえないよ（ファイルや パソコンを こわさない）`); break;
       case '': break;
@@ -147,7 +193,7 @@
   function boot(el) {
     el.dataset.on = '1';
     const w = W[el.dataset.w]; if (!w) return;
-    const st = { fs: clone(w.fs), net: w.net, cwd: HOME.slice(), hist: [], hi: 0 };
+    const st = { fs: clone(w.fs), net: w.net, cwd: HOME.slice(), hist: [], hi: 0, arp: new Set() };
     const demo = !!el.closest('.ex');
     const prompt = () => `${esc(pstr(st.cwd))}&gt;`;
     const log = document.createElement('div'); el.appendChild(log);
@@ -188,7 +234,7 @@
 
   // ---------- 単元 ----------
   const q = stage => () => { const w = stages[stage](), id = 'c' + (++wid); W[id] = w;
-    return { key: `cm${stage}-${w.p}`, keys: true, boxes: [w.box], answer: [w.p],
+    return { key: `cm${stage}-${w.p}-${w.k || w.box}`, keys: true, ci: !!w.ci, boxes: [w.box], answer: [w.p],
       text: F(`<div class="lxgoal">${w.goal}</div><div class="cmterm" data-w="${id}"></div><div class="lxgoal">見(み)つけた 答(こた)えを 下(した)の 箱(はこ)に 入(い)れて Enter（箱(はこ)を おしてから 打(う)とう）。</div>`) }; };
   const three = stage => () => [q(stage)(), q(stage)(), q(stage)()];
   const add = (n, name, lecture) => { const id = `x0c-${n}`; UNITS[id] = { id, subject: 'x0', series: se.id, name: F(name), col: 'コマンド', pass: 0.6, grade: 5, make: three(n), lecture: lecture.map(F) }; se.units.push(id); };
@@ -200,6 +246,9 @@
   add(4, 'dir /s と tree（さがす）', [`<b>dir /s 名前(なまえ)</b> で、いまの 場所(ばしょ)から 下(した)の フォルダを ぜんぶ さがす。見(み)つかった 場所(ばしょ)が「〇〇 のディレクトリ」と 出(で)る。${ex('dir /s takara.txt', ' C:\\Users\\tanken\\Kita\\Ue のディレクトリ')}`, `<b>tree</b> で フォルダの 形(かたち)が 木(き)のように 見(み)える。見(み)つけた 場所(ばしょ)まで cd で 行(い)って type。`]);
   add(5, 'findstr（ことばを さがす）', [`<b>findstr ことば ファイル</b> で、その ことばが ある 行(ぎょう)だけ 出(だ)す（Linuxの grep と 同(おな)じ）。${ex('findstr neko nikki.txt', 'neko to inu ga ita.')}`, '<b>/i</b> を つけると 大文字(おおもじ)・小文字(こもじ)を 区別(くべつ)しないで さがす。']);
   add(6, 'ipconfig（IPアドレス）', [`ネットに つながる きかいには <b>IPアドレス</b>（住所(じゅうしょ)のような 番号(ばんごう)）が ある。<b>ipconfig</b> で 見(み)られる。${ex('ipconfig', '   IPv4 アドレス . . . : 192.168.1.23')}`, '192.168. で はじまる 番号(ばんごう)は、家(いえ)や 教室(きょうしつ)の 中(なか)だけで 使(つか)う 番号(ばんごう)。IPアドレスは むやみに 人(ひと)に 教(おし)えない。']);
-  add(7, 'ping（つながって いるか）', [`<b>ping 名前(なまえ)</b> で、ほかの きかいに「とどいてる？」と 4回(かい) 聞(き)く。返事(へんじ)（応答(おうとう)）が あれば つながって いる。「タイムアウト」は 返事(へんじ)が ない。${ex('ping printer', '192.168.1.101 からの応答: バイト数 =32 時間 =3ms')}`, 'プリンターが 使(つか)えない ときなど、まず ping で つながって いるか しらべるのが PC当番(とうばん)の 第一歩(だいいっぽ)。']);
+  add(7, 'ping（つながって いるか）', [`<b>ping 名前(なまえ)</b> で、ほかの きかいに「とどいてる？」と 4回(かい) 聞(き)く。返事(へんじ)（応答(おうとう)）が あれば つながって いる。「タイムアウト」は 返事(へんじ)が ない。${ex('ping printer', '192.168.1.101 からの応答: バイト数 =32 時間 =3ms')}`, 'プリンターが 使(つか)えない ときなど、まず ping で つながって いるか しらべるのが PC当番(とうばん)の 第一歩(だいいっぽ)。', 'ただし、返事(へんじ)が ない ＝ こわれて いる、とは かぎらない（「ping の 返事(へんじ)が ない ＝ こわれた？」の 単元(たんげん)）。']);
   add(8, 'まとめ（組(く)み合(あ)わせる）', ['これまでの コマンドを 組(く)み合(あ)わせよう。hint.txt を 読(よ)む → dir /a で かくしフォルダ → cd → findstr。', 'ファイルを 消(け)す コマンド（del・rd）や 電源(でんげん)を 切(き)る コマンド（shutdown）は 本物(ほんもの)の パソコンでは 大人(おとな)と いっしょの ときだけ。']);
+  add(9, 'ping の 返事(へんじ)が ない ＝ こわれた？', [`ping は「おーい」と 呼(よ)んで「はーい」と 返(かえ)って くるかを 見(み)る もの。<b>行(い)きと 帰(かえ)りが そろって はじめて 成功(せいこう)</b>。`, `サーバー（ホームページなどを 出(だ)す きかい）の 中(なか)には、<b>ping に 返事(へんじ)を しない 設定(せってい)</b>に して いる ものが ある（あやしい 人(ひと)に「ここに きかいが あるよ」と 知(し)られにくく するため）。だから <b>返事(へんじ)が ない ＝ こわれて いる、とは かぎらない</b>。`, `ほかの 方法(ほうほう)でも たしかめよう。<b>curl http://名前(なまえ)</b> で ホームページが 返(かえ)って くれば、その きかいは 動(うご)いて いる。${ex('curl http://tenki', '<html><head><title>きょうの てんき</title></head>')}`, 'おまけ：ping は <b>ICMP</b> という しくみ。ホームページは <b>TCP</b> の しくみ（つぎの 単元(たんげん)）。<b>ファイアウォール</b>（通信(つうしん)の 門番(もんばん)）が ICMP だけ 止(と)めて いると、ping は とどかないのに ホームページは 見(み)られる。']);
+  add(10, 'TCP と UDP（送(おく)り方(かた)の ちがい）', [`ネットで データを 送(おく)る やり方(かた)には 大(おお)きく 2つ ある。<br><b>TCP</b>：とどいたか たしかめながら、順番(じゅんばん)どおりに 送(おく)る（電話(でんわ)のように「聞(き)こえた？」「うん」と やりとりする）。ホームページ・メールなど、1文字(もじ)でも 欠(か)けたら こまる もの。<br><b>UDP</b>：送(おく)りっぱなし。たしかめない ぶん 速(はや)い（放送(ほうそう)のように 流(なが)すだけ）。ビデオ通話(つうわ)・ゲーム・時計(とけい)あわせなど、少(すこ)し 欠(か)けても 速(はや)さが 大事(だいじ)な もの。`, `<b>ポート番号(ばんごう)</b>は、きかいの 中(なか)の「部屋(へや)番号(ばんごう)」。IPアドレスが 住所(じゅうしょ)なら、ポートは その 家(いえ)の 部屋(へや)。ホームページは 80（http）と 443（https）、名前(なまえ)しらべ（DNS）は 53、時計(とけい)あわせは 123 が よく 使(つか)われる。`, `<b>netstat -an</b> で、いまの 通信(つうしん)の 一覧(いちらん)が 見(み)られる。アドレスの <b>: の うしろ</b>が ポート番号(ばんごう)。TCP には「状態(じょうたい)」が ある（LISTENING＝待(ま)って いる、ESTABLISHED＝つながって いる）。UDP は 状態(じょうたい)の らんが 空(から)（「つながる」という 考(かんが)えが ない）。${ex('netstat -an', '  TCP   192.168.1.23:52011   203.0.113.8:443   ESTABLISHED\n  UDP   0.0.0.0:5353         *:*')}`, 'おまけ：ping の ICMP は TCP でも UDP でも ない べつの しくみで、ポート番号(ばんごう)が ない。']);
+  add(11, 'arp（MACアドレス）', [`<b>MACアドレス</b>は、きかいの ネットの 部品(ぶひん)に 1つずつ ついて いる 番号(ばんごう)（工場(こうじょう)で つけられる）。0〜9 と a〜f の 12けたで、2けたずつ - で 区切(くぎ)る（例(れい)：3a-5c-11-8e-02-f4）。IPアドレスが「いま 住(す)んで いる 住所(じゅうしょ)」（ネットが かわると かわる）なら、MACアドレスは「その きかいの 背番号(せばんごう)」。`, `<b>arp -a</b> で、同(おな)じ ネットの 中(なか)の「IPアドレス → MACアドレス」の 表(ひょう)が 見(み)られる。表(ひょう)に 出(で)るのは <b>さいきん やりとりした きかいだけ</b>。だから 先(さき)に <b>ping</b> してから 見(み)る。${ex('arp -a', '  インターネット アドレス 物理アドレス          種類\n  192.168.1.1            3a-5c-11-8e-02-f4     動的')}`, '「動的(どうてき)」は 自動(じどう)で おぼえた もの、「静的(せいてき)」は はじめから 決(き)まって いる もの。ff-ff-ff-ff-ff-ff は「みんなへ」の 番号(ばんごう)。', 'おまけ：スマホなどには、MACアドレスを わざと かえる 機能(きのう)（ランダムな MACアドレス）も ある。MACアドレスも むやみに 人(ひと)に 教(おし)えない。']);
 })();
